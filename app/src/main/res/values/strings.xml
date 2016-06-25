@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Tracker</string>
+    <string name="title_activity_maps">Tracker</string>
+     <string name="geofence_transition_invalid_type">
+        Geofence transition error: invalid transition type %1$d
+    </string>
+    <string name="geofence_transition_notification_text">Click notification to return to app</string>
+    <string name="geofence_transition_entered">Entered</string>
+    <string name="geofence_transition_exited">Exited</string>
+    <string name="unknown_geofence_transition">Unknown Transition</string>
+    <string name="not_connected">Client Not Connected</string>
+    <string name="geofences_added">Geofence Added</string>
+    <string name="geofences_removed">Geofence Removed</string>
+</resources>
