@@ -106,10 +106,11 @@ public class GeofenceTransitionsIntentService extends IntentService {
         NotificationManager mNotificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         mNotificationManager.notify(0, builder.build());
-        SmsManager sms = SmsManager.getDefault();
-        String strPhone = "0726632096";
-        String strMessage = notificationDetails + ". Location = " + lat + " , " + lng ;
-        sms.sendTextMessage(strPhone, null, strMessage, null, null);
+        if(Constants.contactNumber != null) {
+            SmsManager sms = SmsManager.getDefault();
+            String strMessage = notificationDetails + ". Location = " + lat + " , " + lng;
+            sms.sendTextMessage(Constants.contactNumber, null, strMessage, null, null);
+        }
     }
 
     /**

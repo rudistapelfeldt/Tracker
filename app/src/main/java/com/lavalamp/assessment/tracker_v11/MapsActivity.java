@@ -1,5 +1,6 @@
 package com.lavalamp.assessment.tracker_v11;
 
+import android.annotation.TargetApi;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -7,12 +8,16 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AlertDialog;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -49,10 +54,12 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     private LocationRequest mLocationRequest;
     private boolean isGeofenceAdded = false;
 
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
         // Set buttons
         mAddGeofencesButton = (Button) findViewById(R.id.btnAddGeofence);
         mRemoveGeofenceButton = (Button)findViewById(R.id.btnRemoveGeofence);
@@ -69,10 +76,30 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
             Log.i("TRACKERLOG", "GPS not set");
             showSettingsAlert();
         }
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setActionBar(toolbar);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+       int id = item.getItemId();
+       if (id == R.id.action_settings) {
+           Intent settingsIntent = new Intent(MapsActivity.this, SettingsActivity.class);
+           startActivity(settingsIntent);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
 

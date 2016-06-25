@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Tracker</string>
     <string name="title_activity_maps">Tracker</string>
+    <string name="action_settings">Settings</string>
      <string name="geofence_transition_invalid_type">
         Geofence transition error: invalid transition type %1$d
     </string>

@@ -11,6 +11,8 @@ public final class Constants {
     private Constants() {
     }
 
+    public static String contactNumber;
+
     public static final String PACKAGE_NAME = "com.google.android.gms.location.Geofence";
 
     public static final long GEOFENCE_EXPIRATION_IN_HOURS = 12;
