@@ -1,17 +1,19 @@
 package com.lavalamp.assessment.tracker_v11;
 
+import android.app.Activity;
 import android.app.IntentService;
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.TaskStackBuilder;
+import android.telephony.SmsManager;
 import android.text.TextUtils;
 import android.util.Log;
-import android.telephony.SmsManager;
+import android.widget.Toast;
 
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingEvent;
@@ -29,6 +31,10 @@ import java.util.List;
 public class GeofenceTransitionsIntentService extends IntentService {
 
     protected static final String TAG = "GeofenceTransitionsIS";
+
+    private SharedPreferences sharedPreferences;
+
+    private int mode;
 
     public GeofenceTransitionsIntentService() {
         super(TAG);
@@ -88,28 +94,36 @@ public class GeofenceTransitionsIntentService extends IntentService {
      * If the user clicks the notification, control goes to the MainActivity.
      */
     private void sendNotification(String notificationDetails, double lat, double lng) {
+        mode = Activity.MODE_PRIVATE;
+        sharedPreferences = getSharedPreferences(Constants.MY_PREFS, mode);
         Intent notificationIntent = new Intent(getApplicationContext(), MapsActivity.class);
-        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-        stackBuilder.addParentStack(MapsActivity.class);
-        stackBuilder.addNextIntent(notificationIntent);
-        PendingIntent notificationPendingIntent =
-                stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
-        builder.setSmallIcon(R.mipmap.ic_launcher)
+        //notificationIntent.setAction(Intent.ACTION_MAIN);
+        //notificationIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+        //TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+        //stackBuilder.addParentStack(MapsActivity.class);
+        //stackBuilder.addNextIntent(notificationIntent);
+        PendingIntent pIntent = PendingIntent.getActivity(getApplicationContext(), (int)System.currentTimeMillis(), notificationIntent, 0);
+        //PendingIntent notificationPendingIntent =
+        //        stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+        Notification builder = new Notification.Builder(this).setSmallIcon(R.mipmap.ic_launcher)
                 .setLargeIcon(BitmapFactory.decodeResource(getResources(),
                         R.mipmap.ic_launcher))
                 .setColor(Color.RED)
                 .setContentTitle(notificationDetails)
                 .setContentText(getString(R.string.geofence_transition_notification_text))
-                .setContentIntent(notificationPendingIntent);
-        builder.setAutoCancel(true);
-        NotificationManager mNotificationManager =
-                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        mNotificationManager.notify(0, builder.build());
-        if(Constants.contactNumber != null) {
+                .setContentIntent(pIntent).setAutoCancel(true).build();
+
+        NotificationManager notificationManager =
+                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+        notificationManager.notify(0, builder);
+        String number = sharedPreferences.getString("Number", "");
+        if(!number.equals("")) {
             SmsManager sms = SmsManager.getDefault();
             String strMessage = notificationDetails + ". Location = " + lat + " , " + lng;
-            sms.sendTextMessage(Constants.contactNumber, null, strMessage, null, null);
+            sms.sendTextMessage(number, null, strMessage, null, null);
+        }else{
+            Toast.makeText(GeofenceTransitionsIntentService.this, "Set phone number to receive notifications", Toast.LENGTH_LONG).show();
         }
     }
 

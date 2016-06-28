@@ -1,10 +1,12 @@
 package com.lavalamp.assessment.tracker_v11;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationManager;
@@ -15,13 +17,13 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
+import android.widget.Toolbar;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -38,7 +40,6 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
 
@@ -53,16 +54,21 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     protected GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
     private boolean isGeofenceAdded = false;
+    private SharedPreferences sharedPreferences;
+    private int mode;
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
-
+        //SharedPreferences
+        mode = Activity.MODE_PRIVATE;
+        sharedPreferences = getSharedPreferences(Constants.MY_PREFS, mode);
         // Set buttons
         mAddGeofencesButton = (Button) findViewById(R.id.btnAddGeofence);
         mRemoveGeofenceButton = (Button)findViewById(R.id.btnRemoveGeofence);
+        mRemoveGeofenceButton.setEnabled(false);
         //LocationManager init
         locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
         //Init Geofence list
@@ -93,10 +99,10 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-       int id = item.getItemId();
-       if (id == R.id.action_settings) {
-           Intent settingsIntent = new Intent(MapsActivity.this, SettingsActivity.class);
-           startActivity(settingsIntent);
+        int id = item.getItemId();
+        if (id == R.id.action_settings) {
+            Intent settingsIntent = new Intent(MapsActivity.this, SettingsActivity.class);
+            startActivity(settingsIntent);
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -131,12 +137,12 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
             if (current != null) {
                 LatLng currentLocation = new LatLng(current.getLatitude(), current.getLongitude());
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 17));
-                mLocationRequest = new LocationRequest();
-                mLocationRequest.setInterval(5000); //5 seconds
-                mLocationRequest.setFastestInterval(3000); //3 seconds
-                mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
-                LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
             }
+            mLocationRequest = new LocationRequest();
+            mLocationRequest.setInterval(5000); //5 seconds
+            mLocationRequest.setFastestInterval(3000); //3 seconds
+            mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
         }catch(SecurityException sec){
             showToast(sec.getMessage());
         }
@@ -186,21 +192,13 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         alertDialog.show();
     }
 
-    protected void setMarker(Location location){
-        lat = location.getLatitude();
-        lng = location.getLongitude();
-        LatLng current = new LatLng(lat, lng);
-        mMap.addMarker(new MarkerOptions().position(current).title("You are here"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(current));
-    }
-
-    protected void populateGeofenceList() {
+    protected void populateGeofenceList(float radius) {
         mGeofenceList.add(new Geofence.Builder()
                 .setRequestId("GeoFence")
                 .setCircularRegion(
                         geofenceLat,
                         geofenceLng,
-                        Constants.GEOFENCE_RADIUS_IN_METERS
+                        radius
                 )
                 .setExpirationDuration(Constants.GEOFENCE_EXPIRATION_IN_MILLISECONDS)
                 .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER |
@@ -210,27 +208,32 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
 
     //Add Geofence method
 
-    protected void addGeofencesButtonHandler(View view) {
+    public void addGeofencesButtonHandler(View view) {
+        float radius = sharedPreferences.getFloat("GeofenceRadius", 0);
         if (!mGoogleApiClient.isConnected()) {
             showToast(getString(R.string.not_connected));
             return;
         }
-        populateGeofenceList();
-        try {
-            LocationServices.GeofencingApi.addGeofences(
-                    mGoogleApiClient,
-                    getGeofencingRequest(),
-                    getGeofencePendingIntent()
-            ).setResultCallback(this);
-            mMap.addCircle(new CircleOptions()
-                    .center(new LatLng(geofenceLat, geofenceLng))
-                    .radius(100)
-                    .strokeColor(Color.RED)
-                    .fillColor(Color.BLUE));
-            isGeofenceAdded = true;
-            setButtonsEnabledState();
-        } catch (SecurityException securityException) {
-            showToast(securityException.getMessage());
+        if (radius == 0.0){
+            showToast("Please Set Geofence Radius");
+        }else {
+            populateGeofenceList(radius);
+            try {
+                LocationServices.GeofencingApi.addGeofences(
+                        mGoogleApiClient,
+                        getGeofencingRequest(),
+                        getGeofencePendingIntent()
+                ).setResultCallback(this);
+                mMap.addCircle(new CircleOptions()
+                        .center(new LatLng(geofenceLat, geofenceLng))
+                        .radius(radius)
+                        .strokeColor(Color.RED)
+                        .fillColor(Color.BLUE));
+                isGeofenceAdded = true;
+                setButtonsEnabledState();
+            } catch (SecurityException securityException) {
+                showToast(securityException.getMessage());
+            }
         }
     }
 

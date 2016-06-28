@@ -13,29 +13,129 @@
     <TextView
         android:layout_width="300dp"
         android:layout_height="wrap_content"
-        android:text="Please enter a phone number to send sms notifications to"
+        android:text="@string/enter_number"
         android:id="@+id/tvNumber"
+        android:textColor="@color/white"
         android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="37dp"
-        android:textColor="@color/white"/>
+        android:layout_alignParentStart="true" />
 
     <EditText
         android:layout_width="300dp"
         android:layout_height="wrap_content"
         android:id="@+id/etNumber"
         android:background="@drawable/edit_button_bg"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:singleLine="true"
+        android:maxLength="13"
         android:layout_below="@+id/tvNumber"
+        android:layout_alignParentStart="true" />
+
+    <View style="@style/Divider"
+        android:layout_below="@+id/btnSaveNumber"
         android:layout_alignParentStart="true"
-        android:layout_marginTop="40dp" />
+        android:id="@+id/view" />
 
     <Button
         style="?android:attr/buttonStyleSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="SAVE"
-        android:id="@+id/btnSave"
+        android:id="@+id/btnSaveNumber"
         android:layout_below="@+id/etNumber"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:text="@string/enter_radius"
+        android:id="@+id/tvRadius"
+        android:textColor="@color/white"
+        android:layout_below="@+id/view"
         android:layout_alignParentStart="true"
-        android:layout_marginTop="40dp" />
+        android:layout_marginTop="32dp" />
+
+    <EditText
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/etRadius"
+        android:background="@drawable/edit_button_bg"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:maxLength="13"
+        android:singleLine="true"
+        android:layout_below="@+id/tvRadius"
+        android:layout_alignParentStart="true" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="SAVE"
+        android:id="@+id/btnSaveRadius"
+        android:layout_below="@+id/etRadius"
+        android:layout_alignParentStart="true" />
+
+    <View style="@style/Divider"
+        android:id="@+id/view2"
+        android:layout_centerVertical="true"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:text="Add Geofence"
+        android:id="@+id/tvAddGeofence"
+        android:layout_below="@+id/view2"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="34dp"
+        android:textColor="@color/white"/>
+
+    <EditText
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/etSearch"
+        android:hint="(Search)"
+        android:background="@drawable/edit_button_bg"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:maxLength="25"
+        android:singleLine="true"
+        android:layout_below="@+id/tvAddGeofence"
+        android:layout_alignParentStart="true" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="SEARCH"
+        android:id="@+id/btnSearch"
+        android:layout_below="@+id/etSearch"
+        android:layout_alignParentStart="true" />
+
+    <EditText
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/etLat"
+        android:background="@drawable/edit_button_bg"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:maxLength="13"
+        android:singleLine="true"
+        android:layout_below="@+id/btnSearch"
+        android:layout_alignParentStart="true" />
+
+    <EditText
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/etLng"
+        android:background="@drawable/edit_button_bg"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:maxLength="13"
+        android:singleLine="true"
+        android:layout_below="@+id/etLat"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="38dp" />
+
 </RelativeLayout>
