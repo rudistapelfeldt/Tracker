@@ -67,6 +67,7 @@
         android:layout_height="40dp"
         android:layout_above="@+id/btnAddGeofence"
         android:layout_alignEnd="@+id/btnAddGeofence"
-        android:choiceMode="multipleChoice"
+        android:choiceMode="singleChoice"
+        android:background="@color/white"
         android:id="@+id/lvChooseGeofence"></ListView>
 </RelativeLayout>

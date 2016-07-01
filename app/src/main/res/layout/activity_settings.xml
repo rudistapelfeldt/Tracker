@@ -10,6 +10,8 @@
     android:background="?attr/colorPrimary"
     tools:context="com.lavalamp.assessment.tracker_v11.SettingsActivity">
 
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent">
     <TextView
         android:layout_width="300dp"
         android:layout_height="wrap_content"
@@ -84,58 +86,75 @@
     <TextView
         android:layout_width="300dp"
         android:layout_height="wrap_content"
-        android:text="Add Geofence"
+        android:text="Add A Location"
         android:id="@+id/tvAddGeofence"
         android:layout_below="@+id/view2"
         android:layout_alignParentStart="true"
         android:layout_marginTop="34dp"
         android:textColor="@color/white"/>
 
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Find A Place"
+        android:id="@+id/btnPlaceFind"
+        android:layout_below="@+id/tvAddGeofence"
+        android:layout_alignParentStart="true" />
+
     <EditText
         android:layout_width="300dp"
         android:layout_height="wrap_content"
-        android:id="@+id/etSearch"
-        android:hint="(Search)"
+        android:id="@+id/etPlaceName"
         android:background="@drawable/edit_button_bg"
         android:paddingLeft="10dp"
         android:paddingRight="10dp"
-        android:maxLength="25"
+        android:layout_marginTop="10dp"
+        android:maxLength="30"
         android:singleLine="true"
-        android:layout_below="@+id/tvAddGeofence"
-        android:layout_alignParentStart="true" />
+        android:layout_below="@+id/btnPlaceFind"
+        android:layout_alignParentStart="true"
+        android:editable="false"
+        android:visibility="invisible" />
+
+    <EditText
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/etPlaceLat"
+        android:background="@drawable/edit_button_bg"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:maxLength="30"
+        android:singleLine="true"
+        android:layout_marginTop="10dp"
+        android:layout_below="@+id/etPlaceName"
+        android:layout_alignParentStart="true"
+        android:editable="false"
+        android:visibility="invisible" />
+
+    <EditText
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/etPlaceLng"
+        android:background="@drawable/edit_button_bg"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:maxLength="30"
+        android:singleLine="true"
+        android:layout_marginTop="10dp"
+        android:layout_below="@+id/etPlaceLat"
+        android:layout_alignParentStart="true"
+        android:editable="false"
+        android:visibility="invisible" />
 
     <Button
         style="?android:attr/buttonStyleSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="SEARCH"
-        android:id="@+id/btnSearch"
-        android:layout_below="@+id/etSearch"
+        android:text="Add To Geofence List"
+        android:id="@+id/btnAddPlaceGeofence"
+        android:layout_marginTop="10dp"
+        android:layout_alignParentBottom="true"
         android:layout_alignParentStart="true" />
-
-    <EditText
-        android:layout_width="300dp"
-        android:layout_height="wrap_content"
-        android:id="@+id/etLat"
-        android:background="@drawable/edit_button_bg"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp"
-        android:maxLength="13"
-        android:singleLine="true"
-        android:layout_below="@+id/btnSearch"
-        android:layout_alignParentStart="true" />
-
-    <EditText
-        android:layout_width="300dp"
-        android:layout_height="wrap_content"
-        android:id="@+id/etLng"
-        android:background="@drawable/edit_button_bg"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp"
-        android:maxLength="13"
-        android:singleLine="true"
-        android:layout_below="@+id/etLat"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="38dp" />
 
 </RelativeLayout>
