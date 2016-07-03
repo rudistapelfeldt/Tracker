@@ -35,6 +35,9 @@ public class GeofenceTransitionsIntentService extends IntentService {
     private SharedPreferences sharedPreferences;
 
     private int mode;
+    private GeofencingEvent geofencingEvent;
+
+    private int geofenceTransition;
 
     public GeofenceTransitionsIntentService() {
         super(TAG);
@@ -47,31 +50,39 @@ public class GeofenceTransitionsIntentService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        GeofencingEvent geofencingEvent = GeofencingEvent.fromIntent(intent);
+        geofencingEvent = GeofencingEvent.fromIntent(intent);
         if (geofencingEvent.hasError()) {
             int error = geofencingEvent.getErrorCode();
             Log.i(TAG,"Error Code = " +error);
             return;
         }
 
-        int geofenceTransition = geofencingEvent.getGeofenceTransition();
+        geofenceTransition = geofencingEvent.getGeofenceTransition();
 
-        if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER ||
-                geofenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT) {
+        //if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER ||
+                //geofenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT) {
+            switch (geofenceTransition) {
+                case Geofence.GEOFENCE_TRANSITION_ENTER:
+                    transition();
+                    break;
+                case Geofence.GEOFENCE_TRANSITION_EXIT:
+                    transition();
+                    break;
+                default:
+                    Toast.makeText(this, R.string.geofence_transition_invalid_type, Toast.LENGTH_LONG).show();
+                    break;
+            }
+    }
 
-            List<Geofence> triggeringGeofences = geofencingEvent.getTriggeringGeofences();
-
-            String geofenceTransitionDetails = getGeofenceTransitionDetails(
-                    this,
-                    geofenceTransition,
-                    triggeringGeofences
-            );
-            sendNotification(geofenceTransitionDetails, geofencingEvent.getTriggeringLocation().getLatitude(), geofencingEvent.getTriggeringLocation().getLongitude());
-            Log.i(TAG, geofenceTransitionDetails);
-        } else {
-            // Log the error.
-            Log.e(TAG, getString(R.string.geofence_transition_invalid_type, geofenceTransition));
-        }
+    private void transition(){
+        List<Geofence> triggeringGeofences = geofencingEvent.getTriggeringGeofences();
+        String geofenceTransitionDetails = getGeofenceTransitionDetails(
+                this,
+                geofenceTransition,
+                triggeringGeofences
+        );
+        sendNotification(geofenceTransitionDetails, geofencingEvent.getTriggeringLocation().getLatitude(), geofencingEvent.getTriggeringLocation().getLongitude());
+        Log.i(TAG, geofenceTransitionDetails);
     }
 
     private String getGeofenceTransitionDetails(
@@ -97,14 +108,7 @@ public class GeofenceTransitionsIntentService extends IntentService {
         mode = Activity.MODE_PRIVATE;
         sharedPreferences = getSharedPreferences(Constants.MY_PREFS, mode);
         Intent notificationIntent = new Intent(getApplicationContext(), MapsActivity.class);
-        //notificationIntent.setAction(Intent.ACTION_MAIN);
-        //notificationIntent.addCategory(Intent.CATEGORY_LAUNCHER);
-        //TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-        //stackBuilder.addParentStack(MapsActivity.class);
-        //stackBuilder.addNextIntent(notificationIntent);
         PendingIntent pIntent = PendingIntent.getActivity(getApplicationContext(), (int)System.currentTimeMillis(), notificationIntent, 0);
-        //PendingIntent notificationPendingIntent =
-        //        stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
         Notification builder = new Notification.Builder(this).setSmallIcon(R.mipmap.ic_launcher)
                 .setLargeIcon(BitmapFactory.decodeResource(getResources(),
                         R.mipmap.ic_launcher))
