@@ -8,7 +8,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
@@ -19,11 +18,15 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.HeaderViewListAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 import android.widget.Toolbar;
@@ -41,7 +44,6 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
@@ -74,7 +76,6 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
-
         //SharedPreferences
         mode = Activity.MODE_PRIVATE;
         sharedPreferences = getSharedPreferences(Constants.MY_PREFS, mode);
@@ -92,26 +93,30 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         buildGoogleApiClient();
         //Show GPS setting alert if not enabled
         if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-            Log.i("TRACKERLOG", "GPS not set");
             showSettingsAlert();
         }
         databaseHelper = new DatabaseHelper(this);
         geoMap = new HashMap<String, LatLng>();
         list = new ArrayList<String>();
-        //fill hashmap with name, lat and lang from database
-        populateMap();
-        //populate list for listview
-        populateList();
-        //set Array Adapter
-        arrayAdapter = new ArrayAdapter<String>(MapsActivity.this, android.R.layout.simple_list_item_1, list);
         geofenceListView = (ListView)findViewById(R.id.lvChooseGeofence);
-        geofenceListView.setAdapter(arrayAdapter);
+        LayoutInflater myinflater = getLayoutInflater();
+        ViewGroup myHeader = (ViewGroup)myinflater.inflate(R.layout.list_view_header, geofenceListView, false);
+        geofenceListView.addHeaderView(myHeader, null, false);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setActionBar(toolbar);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+    }
+
+    private void initListView(){
+        //fill hashmap with name, lat and lang from database
+        populateMap();
+        //populate list for listview
+        populateList();
+        PlaceAdapter placeAdapter = new PlaceAdapter(MapsActivity.this, list);
+        geofenceListView.setAdapter(placeAdapter);
     }
 
     @Override
@@ -124,21 +129,7 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     @Override
     protected void onResume() {
         super.onResume();
-        Log.i(TAG, "onResume");
-        //fill hashmap with name, lat and lang from database
-        populateMap();
-        //populate list for listview
-        populateList();
-        //set Array Adapter
-        arrayAdapter = new ArrayAdapter<String>(MapsActivity.this, android.R.layout.simple_list_item_1, list);
-        geofenceListView = (ListView)findViewById(R.id.lvChooseGeofence);
-        geofenceListView.setAdapter(arrayAdapter);
-        //populateMap();
-        //populate list for listview
-        //populateList();
-        //set Array Adapter
-        //arrayAdapter = new ArrayAdapter<String>(MapsActivity.this, android.R.layout.simple_list_item_1, list);
-        //geofenceListView.setAdapter(arrayAdapter);
+        initListView();
 
     }
 
@@ -153,16 +144,6 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         return super.onOptionsItemSelected(item);
     }
 
-
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
     @Override
     public void onMapReady(GoogleMap googleMap) {
         try {
@@ -237,12 +218,12 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         alertDialog.show();
     }
 
-    protected void populateGeofenceList(float radius) {
+    protected void populateGeofenceList(float radius, double lat, double lng) {
         mGeofenceList.add(new Geofence.Builder()
                 .setRequestId("GeoFence")
                 .setCircularRegion(
-                        geofenceLat,
-                        geofenceLng,
+                        lat,
+                        lng,
                         radius
                 )
                 .setExpirationDuration(Constants.GEOFENCE_EXPIRATION_IN_MILLISECONDS)
@@ -254,32 +235,47 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     //Add Geofence method
 
     public void addGeofencesButtonHandler(View view) {
-        float radius = sharedPreferences.getFloat("GeofenceRadius", 0);
-        if (!mGoogleApiClient.isConnected()) {
-            showToast(getString(R.string.not_connected));
-            return;
+        HeaderViewListAdapter hlva = (HeaderViewListAdapter)geofenceListView.getAdapter();
+        PlaceAdapter postAdapter = (PlaceAdapter) hlva.getWrappedAdapter();
+        List<CheckBox> selected = postAdapter.getSelectBoxes();
+        //List<CheckBox> selected = ((PlaceAdapter)geofenceListView.getAdapter()).getSelectBoxes();
+        for(int i = 0; i < selected.size();i++){
+            //Add places to geofence list
         }
-        if (radius == 0.0){
-            showToast("Please Set Geofence Radius");
-        }else {
-            populateGeofenceList(radius);
-            try {
-                LocationServices.GeofencingApi.addGeofences(
-                        mGoogleApiClient,
-                        getGeofencingRequest(),
-                        getGeofencePendingIntent()
-                ).setResultCallback(this);
-                mMap.addCircle(new CircleOptions()
-                        .center(new LatLng(geofenceLat, geofenceLng))
-                        .radius(radius)
-                        .strokeColor(Color.RED)
-                        .fillColor(Color.BLUE));
-                isGeofenceAdded = true;
-                setButtonsEnabledState();
-            } catch (SecurityException securityException) {
-                showToast(securityException.getMessage());
+        //postAdapter.clearCheckBoxes();
+        /*for (int i = 0; i < positions ; i++){
+
+            double lat = geoMap.get(list.get(positions.keyAt(i))).latitude;
+
+            double lng = geoMap.get(list.get(positions.keyAt(i))).longitude;
+            float radius = sharedPreferences.getFloat("GeofenceRadius", 0);
+            if (!mGoogleApiClient.isConnected()) {
+                showToast(getString(R.string.not_connected));
+                return;
             }
-        }
+            if (radius == 0.0) {
+                showToast("Please Set Geofence Radius");
+            } else {
+                populateGeofenceList(radius, lat, lng );
+                try {
+                    LocationServices.GeofencingApi.addGeofences(
+                            mGoogleApiClient,
+                            getGeofencingRequest(),
+                            getGeofencePendingIntent()
+                    ).setResultCallback(this);
+                    mMap.addCircle(new CircleOptions()
+                            .center(new LatLng(lat,lng))
+                            .radius(radius)
+                            .strokeColor(Color.RED)
+                            .fillColor(Color.BLUE));
+                    isGeofenceAdded = true;
+                    setButtonsEnabledState();
+                } catch (SecurityException securityException) {
+                    showToast(securityException.getMessage());
+                }
+            }
+            i++;
+        }*/
     }
 
     //Remove Geofence Method
@@ -351,23 +347,21 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
 
     private void populateMap(){
         Cursor cursor = databaseHelper.getAllRecords();
-        if (cursor.getCount() == 0){
-            Log.i(TAG, "No records");
-        }else{
+        if (cursor.getCount() > 0){
             Log.i(TAG, "Putting data in map");
             cursor.moveToFirst();
-            while(cursor.moveToNext()){
+            for(int i = 0; i < cursor.getCount(); i++){
                 geoMap.put(cursor.getString(cursor.getColumnIndex("NAME")), new LatLng(cursor.getDouble(cursor.getColumnIndex("LATITUDE")), cursor.getDouble(cursor.getColumnIndex("LONGITUDE"))));
+                cursor.moveToNext();
             }
         }
         databaseHelper.close();
     }
 
     private void populateList(){
-        Log.i(TAG, "GEOMAP SIZE = " + geoMap.size());
+        list.clear();
         if (geoMap.size() > 0){
             for (Map.Entry<String, LatLng> entry : geoMap.entrySet()){
-                Log.i(TAG, "entry = " + entry);
                 list.add(entry.getKey());
             }
         }

@@ -81,14 +81,18 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
                 } catch (GooglePlayServicesRepairableException e) {
                     // TODO: Handle the error.
                 } catch (GooglePlayServicesNotAvailableException e) {
-                    // TODO: Handle the error.
+                    showToast("Service Not Available");
                 }
             case R.id.btnAddPlaceGeofence:
                 if (!etPlaceLat.getText().toString().equals("") && !etPlaceLng.getText().toString().equals("")) {
-                    double latitude = Double.parseDouble(etPlaceLat.getText().toString());
-                    double longitude = Double.parseDouble(etPlaceLng.getText().toString());
-                    dbHelper.InsertRecord(etPlaceName.getText().toString(), latitude, longitude);
-                    showToast("Place Added");
+                    float latitude = Float.parseFloat(etPlaceLat.getText().toString());
+                    float longitude = Float.parseFloat(etPlaceLng.getText().toString());
+                    boolean result = dbHelper.InsertRecord(etPlaceName.getText().toString(), latitude, longitude);
+                    if (result) {
+                        showToast("Place Added");
+                    }else{
+                        showToast("Error Adding Place");
+                    }
                     dbHelper.close();
                 }
                 break;
@@ -101,8 +105,6 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
         if (requestCode == PLACE_AUTOCOMPLETE_REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
                 Place place = PlaceAutocomplete.getPlace(this, data);
-                Log.i(TAG, "Place: " + place.getName());
-                Log.i(TAG, "LATLNG = " + place.getLatLng().latitude + " , " + place.getLatLng().longitude);
                 etPlaceName.setVisibility(View.VISIBLE);
                 etPlaceLat.setVisibility(View.VISIBLE);
                 etPlaceLng.setVisibility(View.VISIBLE);
@@ -112,11 +114,9 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
                 btnAddPlace.setVisibility(View.VISIBLE);
             } else if (resultCode == PlaceAutocomplete.RESULT_ERROR) {
                 Status status = PlaceAutocomplete.getStatus(this, data);
-                // TODO: Handle the error.
-                Log.i(TAG, status.getStatusMessage());
-
+                showToast(status.getStatusMessage());
             } else if (resultCode == RESULT_CANCELED) {
-                // The user canceled the operation.
+                showToast("Operation Canceled");
             }
         }
     }

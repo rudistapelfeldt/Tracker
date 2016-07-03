@@ -43,7 +43,7 @@
         style="?android:attr/buttonStyleSmall"
         android:layout_width="160dp"
         android:layout_height="wrap_content"
-        android:text="Add Geofence"
+        android:text="Add Geofences"
         android:id="@+id/btnAddGeofence"
         android:onClick="addGeofencesButtonHandler"
         android:layout_alignTop="@+id/btnRemoveGeofence"
@@ -64,10 +64,14 @@
 
     <ListView
         android:layout_width="wrap_content"
-        android:layout_height="40dp"
+        android:layout_height="60dp"
         android:layout_above="@+id/btnAddGeofence"
         android:layout_alignEnd="@+id/btnAddGeofence"
-        android:choiceMode="singleChoice"
-        android:background="@color/white"
-        android:id="@+id/lvChooseGeofence"></ListView>
+        android:choiceMode="multipleChoice"
+        android:background="@drawable/listview"
+        android:id="@+id/lvChooseGeofence">
+        android:radius="8dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+    </ListView>
 </RelativeLayout>

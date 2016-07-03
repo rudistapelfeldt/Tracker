@@ -27,7 +27,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db){
-        db.execSQL("CREATE TABLE " + TABLE_NAME + "(" + COL1 + " TEXT PRIMARY KEY ," + COL2 + " DOUBLE," + COL3 + " DOUBLE)");
+        db.execSQL("CREATE TABLE " + TABLE_NAME + "(" + COL1 + " TEXT PRIMARY KEY ," + COL2 + " REAL," + COL3 + " REAL)");
     }
 
     @Override
@@ -36,7 +36,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    public boolean InsertRecord(String name, double lat, double lng){
+    public boolean InsertRecord(String name, float lat, float lng){
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(COL1,name);
