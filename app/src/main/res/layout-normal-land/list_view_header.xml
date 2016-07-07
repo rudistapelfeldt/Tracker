@@ -6,10 +6,10 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="PLACES"
+        android:text="@string/places"
         android:id="@+id/tvPlaces"
         android:layout_gravity="center_horizontal"
-        android:textColor="?android:colorAccent"
+        android:textColor="@color/white"
         android:textSize="30dp"
         android:textIsSelectable="true" />
 </LinearLayout>

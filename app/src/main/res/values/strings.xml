@@ -2,7 +2,7 @@
     <string name="app_name">Tracker</string>
     <string name="title_activity_maps">Tracker</string>
     <string name="action_settings">Settings</string>
-    <string name="enter_number">Please enter a phone number to send sms notifications to</string>
+    <string name="enter_number">Please select a notification recipient</string>
     <string name="enter_radius">Please enter the radius of the geofence in meters</string>
      <string name="geofence_transition_invalid_type">
         Geofence transition error: invalid transition type %1$d
@@ -14,4 +14,5 @@
     <string name="not_connected">Client Not Connected</string>
     <string name="geofences_added">Geofence Added</string>
     <string name="geofences_removed">Geofence Removed</string>
+    <string name="places">PLACES</string>
 </resources>

@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.location.Location;
@@ -18,11 +19,14 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.HeaderViewListAdapter;
@@ -51,12 +55,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MapsActivity extends FragmentActivity implements LocationListener, OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, ResultCallback {
+public class MapsActivity extends FragmentActivity implements ListView.OnItemClickListener, LocationListener, OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, ResultCallback {
 
     private GoogleMap mMap;
     private LocationManager locationManager;
     private PendingIntent mGeofencePendingIntent;
-    private double geofenceLat, geofenceLng;
     protected ArrayList<Geofence> mGeofenceList;
     private Button mAddGeofencesButton, mRemoveGeofenceButton;
     protected GoogleApiClient mGoogleApiClient;
@@ -66,10 +69,11 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
     private int mode;
     private DatabaseHelper databaseHelper;
     private ListView geofenceListView;
-    private List<String> list;
+    ArrayAdapter<Model> adapter;
+    private List<Model> list = new ArrayList<Model>();
     private HashMap<String, LatLng> geoMap;
     private HeaderViewListAdapter hlva;
-    private PlaceAdapter postAdapter;
+    private MyAdapter postAdapter;
     private String TAG = "MapsActivity";
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
@@ -86,8 +90,6 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         mRemoveGeofenceButton.setEnabled(false);
         //LocationManager init
         locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
-        //Init Geofence list
-        mGeofenceList = new ArrayList<Geofence>();
         //Pending Intent  for Geofence
         mGeofencePendingIntent = null;
         //Google API Client build
@@ -98,7 +100,6 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         }
         databaseHelper = new DatabaseHelper(this);
         geoMap = new HashMap<String, LatLng>();
-        list = new ArrayList<String>();
         geofenceListView = (ListView)findViewById(R.id.lvChooseGeofence);
         LayoutInflater myinflater = getLayoutInflater();
         ViewGroup myHeader = (ViewGroup)myinflater.inflate(R.layout.list_view_header, geofenceListView, false);
@@ -115,9 +116,9 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         //fill hashmap with name, lat and lang from database
         populateMap();
         //populate list for listview
-        populateList();
-        PlaceAdapter placeAdapter = new PlaceAdapter(MapsActivity.this, list);
-        geofenceListView.setAdapter(placeAdapter);
+        adapter = new MyAdapter(this,populateList());
+        geofenceListView.setAdapter(adapter);
+        geofenceListView.setOnItemClickListener(this);
     }
 
     @Override
@@ -125,6 +126,11 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> arg0, View v, int position, long arg3) {
+        CheckBox checkbox = (CheckBox) v.getTag(R.id.cbListRow);
     }
 
     @Override
@@ -219,12 +225,15 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         alertDialog.show();
     }
 
-    protected void populateGeofenceList(float radius, List<CheckBox> selected) {
-        for(CheckBox check : selected) {
-            double lat = geoMap.get(check.getText()).latitude;
-            double lng = geoMap.get(check.getText()).longitude;
+    protected void populateGeofenceList(float radius, List<String> selected) {
+        //Init Geofence list
+        mGeofenceList = new ArrayList<Geofence>();
+        for(String check : selected) {
+
+            double lat = geoMap.get(check).latitude;
+            double lng = geoMap.get(check).longitude;
             mGeofenceList.add(new Geofence.Builder()
-                    .setRequestId(check.getText().toString())
+                    .setRequestId(check.toString())
                     .setCircularRegion(
                             lat,
                             lng,
@@ -241,9 +250,9 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
 
     public void addGeofencesButtonHandler(View view) {
         hlva = (HeaderViewListAdapter)geofenceListView.getAdapter();
-        postAdapter = (PlaceAdapter) hlva.getWrappedAdapter();
-        List<CheckBox> selected = postAdapter.getSelectBoxes();
-        if (selected.size() == 0){
+        postAdapter = (MyAdapter) hlva.getWrappedAdapter();
+        ;
+        if (postAdapter.getSelectBoxes().size() == 0){
             AlertDialog.Builder addPlace = new AlertDialog.Builder(this);
             addPlace.setIcon(R.mipmap.ic_launcher).setTitle("Add Geofence Places")
                     .setMessage("Please add a place. If \"PLACES\" is emply then find a place in settings")
@@ -263,10 +272,11 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
             if (radius == 0.0) {
                 showToast("Please Set Geofence Radius");
             } else {
-                populateGeofenceList(radius, selected);
-                for (CheckBox cb : selected) {
-                    double lat = geoMap.get(cb.getText()).latitude;
-                    double lng = geoMap.get(cb.getText()).longitude;
+                populateGeofenceList(radius, postAdapter.getSelectBoxes());
+                for (String cb : postAdapter.getSelectBoxes()) {
+                    Log.i(TAG, "CHECKBOX SELECTED to add" + cb);
+                    double lat = geoMap.get(cb).latitude;
+                    double lng = geoMap.get(cb).longitude;
                     try {
                         LocationServices.GeofencingApi.addGeofences(
                                 mGoogleApiClient,
@@ -302,9 +312,9 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
             ).setResultCallback(this);
             mMap.clear();
             isGeofenceAdded = false;
-            geofenceListView.clearChoices();
+            batchPickUnselectAll();
+            postAdapter.notifyDataSetChanged();
             setButtonsEnabledState();
-
         } catch (SecurityException securityException) {
             showToast(securityException.getMessage());
         }
@@ -338,11 +348,16 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         }
     }
 
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+    }
+
     // On location change, set the new lat, lng for the geofence
     @Override
     public void onLocationChanged(Location location) {
-        geofenceLat = location.getLatitude();
-        geofenceLng = location.getLongitude();
+
     }
 
     //BUTTON STATE
@@ -361,21 +376,50 @@ public class MapsActivity extends FragmentActivity implements LocationListener, 
         Cursor cursor = databaseHelper.getAllRecords();
         if (cursor.getCount() > 0){
             cursor.moveToFirst();
-            for(int i = 0; i < cursor.getCount(); i++){
+            while (!cursor.isAfterLast()){
+                Log.i("HASHMAPENTRY", "NUMBER " + cursor.getString(cursor.getColumnIndex("NAME")));
                 geoMap.put(cursor.getString(cursor.getColumnIndex("NAME")), new LatLng(cursor.getDouble(cursor.getColumnIndex("LATITUDE")), cursor.getDouble(cursor.getColumnIndex("LONGITUDE"))));
                 cursor.moveToNext();
             }
         }
+        cursor.close();
         databaseHelper.close();
     }
 
-    private void populateList(){
-        list.clear();
+    private List<Model> populateList(){
+        list = new ArrayList<>();
         if (geoMap.size() > 0){
             for (Map.Entry<String, LatLng> entry : geoMap.entrySet()){
-
-                list.add(entry.getKey());
+                list.add(new Model(entry.getKey()));
             }
         }
+        return list;
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        // Make sure to call the super method so that the states of our views are saved
+        super.onSaveInstanceState(outState);
+        // Save our own state now`
+        outState.putSerializable("HashMap", geoMap);
+        outState.putBoolean("GeofenceAdded", isGeofenceAdded);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+    }
+
+    private void batchPickUnselectAll() {
+
+        if (!geofenceListView.getAdapter().isEmpty()) {
+
+            geofenceListView.setItemChecked(0, true);
+
+            geofenceListView.clearChoices();
+
+        }
+
     }
 }
+

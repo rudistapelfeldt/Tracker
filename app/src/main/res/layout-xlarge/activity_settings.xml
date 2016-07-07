@@ -29,7 +29,8 @@
         android:singleLine="true"
         android:maxLength="13"
         android:layout_below="@+id/tvNumber"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:visibility="invisible" />
 
     <View style="@style/Divider"
         android:layout_below="@+id/btnSaveNumber"
@@ -115,36 +116,6 @@
         android:editable="false"
         android:visibility="invisible" />
 
-    <EditText
-        android:layout_width="300dp"
-        android:layout_height="wrap_content"
-        android:id="@+id/etPlaceLat"
-        android:background="@drawable/edit_button_bg"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp"
-        android:maxLength="30"
-        android:singleLine="true"
-        android:layout_marginTop="10dp"
-        android:layout_below="@+id/etPlaceName"
-        android:layout_alignParentStart="true"
-        android:editable="false"
-        android:visibility="invisible" />
-
-    <EditText
-        android:layout_width="300dp"
-        android:layout_height="wrap_content"
-        android:id="@+id/etPlaceLng"
-        android:background="@drawable/edit_button_bg"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp"
-        android:maxLength="30"
-        android:singleLine="true"
-        android:layout_marginTop="10dp"
-        android:layout_below="@+id/etPlaceLat"
-        android:layout_alignParentStart="true"
-        android:editable="false"
-        android:visibility="invisible" />
-
     <Button
         style="?android:attr/buttonStyleSmall"
         android:layout_width="wrap_content"
@@ -155,5 +126,16 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentStart="true"
         android:visibility="invisible" />
+
+    <ListView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/contactsListView"
+        android:layout_alignParentTop="true"
+        android:layout_toEndOf="@+id/btnAddPlaceGeofence"
+        android:layout_marginStart="57dp"
+        android:layout_above="@+id/btnSaveNumber"
+        android:choiceMode="multipleChoice"
+        android:background="@drawable/listview" />
 
 </RelativeLayout>

@@ -6,72 +6,72 @@
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="45dp"
+        android:layout_height="20dp"
         android:theme="@style/AppTheme.AppBarOverlay">
 
     <android.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
+        android:layout_height="20dp"
         android:background="?attr/colorPrimary"
         app:popupTheme="@style/AppTheme.PopupOverlay" />
     </android.support.design.widget.AppBarLayout>
     <RelativeLayout
-        android:layout_width="300dp"
-        android:layout_height="440dp"
+        android:layout_width="150dp"
+        android:layout_height="290dp"
         android:gravity="center"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="50dp"
+        android:layout_marginTop="25dp"
         android:id="@+id/relativeLayout">
     <fragment xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:map="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/map"
         android:name="com.google.android.gms.maps.SupportMapFragment"
-        android:layout_width="fill_parent"
+        android:layout_width="wrap_content"
         android:layout_height="fill_parent"
         tools:context="com.lavalamp.assessment.tracker_v11.MapsActivity"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:layout_above="@+id/btnAddGeofence" />
+
+        <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:text="Add Geofences"
+            android:textSize="7sp"
+            android:id="@+id/btnAddGeofence"
+            android:onClick="addGeofencesButtonHandler"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentStart="true" />
+
+        <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:text="REMOVE GEOFENCE"
+            android:textSize="7sp"
+            android:id="@+id/btnRemoveGeofence"
+            android:onClick="removeGeofencesButtonHandler"
+            android:nestedScrollingEnabled="true"
+            android:layout_alignParentBottom="true"
+            android:layout_toEndOf="@+id/btnAddGeofence" />
+
+        <ListView
+            android:layout_width="wrap_content"
+            android:layout_height="15dp"
+
+            android:choiceMode="multipleChoice"
+            android:background="@drawable/listview"
+            android:id="@+id/lvChooseGeofence"
+            android:layout_above="@+id/btnAddGeofence"
+            android:layout_alignParentStart="true">
+        </ListView>
 
     </RelativeLayout>
 
-    <Button
-        style="?android:attr/buttonStyleSmall"
-        android:layout_width="160dp"
-        android:layout_height="wrap_content"
-        android:text="Add Geofences"
-        android:id="@+id/btnAddGeofence"
-        android:onClick="addGeofencesButtonHandler"
-        android:layout_alignTop="@+id/btnRemoveGeofence"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
-
-    <Button
-        style="?android:attr/buttonStyleSmall"
-        android:layout_width="160dp"
-        android:layout_height="wrap_content"
-        android:text="REMOVE GEOFENCE"
-        android:id="@+id/btnRemoveGeofence"
-        android:onClick="removeGeofencesButtonHandler"
-        android:nestedScrollingEnabled="true"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
-
-    <ListView
-        android:layout_width="wrap_content"
-        android:layout_height="60dp"
-        android:layout_above="@+id/btnAddGeofence"
-        android:layout_alignEnd="@+id/btnAddGeofence"
-        android:choiceMode="multipleChoice"
-        android:background="@drawable/listview"
-        android:id="@+id/lvChooseGeofence">
-        android:radius="8dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-    </ListView>
 </RelativeLayout>

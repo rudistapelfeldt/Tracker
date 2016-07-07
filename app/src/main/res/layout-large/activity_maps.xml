@@ -64,7 +64,7 @@
 
     <ListView
         android:layout_width="wrap_content"
-        android:layout_height="60dp"
+        android:layout_height="50dp"
         android:layout_above="@+id/btnAddGeofence"
         android:layout_alignEnd="@+id/btnAddGeofence"
         android:choiceMode="multipleChoice"
