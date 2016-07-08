@@ -14,10 +14,10 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -34,14 +34,15 @@ import java.util.ArrayList;
 
 public class SettingsActivity extends AppCompatActivity implements View.OnClickListener, LoaderManager.LoaderCallbacks<Cursor>{
     private Button btnSaveRadius,  btnPlaceFind, btnAddPlace;
-    private EditText etNumber, etRadius, etPlaceName, etPlaceLat, etPlaceLng;
-    private AutoCompleteTextView autoName;
+    private EditText etName,etRadius, etPlaceName;
     private ListView contactsListView;
     private SharedPreferences sharedPreferences;
     private int mode;
     int PLACE_AUTOCOMPLETE_REQUEST_CODE = 1;
     private String TAG = "SETTINGSLOG";
     private DatabaseHelper dbHelper;
+    private String mSearchString;
+    private float lat,lng;
     @SuppressLint("InlinedApi")
     private final static String [] FROM_COLUMNS = {Build.VERSION.SDK_INT
             >= Build.VERSION_CODES.HONEYCOMB ? ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME_PRIMARY : ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME ,ContactsContract.CommonDataKinds.Phone.NUMBER};
@@ -69,9 +70,9 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
             ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME_PRIMARY + " LIKE ?" :
             ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " LIKE ?";
     // Defines a variable for the search string
-    private String mSearchString = "Ursula";
+
     // Defines the array to hold values that replace the ?
-    private String[] mSelectionArgs = { mSearchString };
+
 
     long mContactId;
     // The contact's LOOKUP_KEY
@@ -87,39 +88,42 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
-        cr = getContentResolver();
-        nameCur = cr.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
-        while (nameCur.moveToNext())
-        {
-            String name = nameCur.getString(nameCur.getColumnIndex(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB ?ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME_PRIMARY: ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
-            contactNames.add(name);
-        }
-        nameCur.close();
-        String[] cNames = new String[contactNames.size()];
-        contactNames.toArray(cNames);
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-                android.R.layout.simple_dropdown_item_1line, contactNames);
         btnSaveRadius = (Button)findViewById(R.id.btnSaveRadius);
-
         btnPlaceFind = (Button)findViewById(R.id.btnPlaceFind);
         btnAddPlace = (Button)findViewById(R.id.btnAddPlaceGeofence);
-        autoName = (AutoCompleteTextView)findViewById(R.id.autoCompleteTextView);
-        autoName.setAdapter(adapter);
+        etName = (EditText)findViewById(R.id.etName);
         etRadius = (EditText)findViewById(R.id.etRadius);
         etPlaceName = (EditText)findViewById(R.id.etPlaceName);
         btnSaveRadius.setOnClickListener(this);
+        etName.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                Log.i(TAG, "beforeTextChange");
+            }
 
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                Log.i(TAG, "TextChange");
+                mSearchString= etName.getText().toString();
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                Log.i(TAG, "afterTextChange");
+                getLoaderManager().restartLoader(0, null, SettingsActivity.this);
+                mCursorAdapter.notifyDataSetChanged();
+                contactsListView.setAdapter(mCursorAdapter);
+            }
+        });
         btnPlaceFind.setOnClickListener(this);
         btnAddPlace.setOnClickListener(this);
         mode = Activity.MODE_PRIVATE;
         sharedPreferences = getSharedPreferences(Constants.MY_PREFS, mode);
         dbHelper = new DatabaseHelper(this);
-        getLoaderManager().initLoader(0, null, this);
+        getLoaderManager().restartLoader(0, null, SettingsActivity.this);
         getLayoutInflater().inflate(R.layout.contact_row, null);
         contactsListView = (ListView)findViewById(R.id.contactsListView);
-        Log.i(TAG, "ID size = " + TO_IDS.length);
-        Log.i(TAG, "FROM size = " + FROM_COLUMNS.length);
-        // Gets a CursorAdapter
         getLayoutInflater().inflate(R.layout.contact_row, null);
         mCursorAdapter = new SimpleCursorAdapter(
                 this,
@@ -138,11 +142,6 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
         int id = v.getId();
 
         switch(id){
-            case R.id.btnSaveNumber:
-                showToast("Number Saved");
-                editor.putString("Number", etNumber.getText().toString());
-                editor.commit();
-                break;
             case R.id.btnSaveRadius:
                 try{
                     Float.valueOf(etRadius.getText().toString());
@@ -170,17 +169,13 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
                     break;
                 }
             case R.id.btnAddPlaceGeofence:
-                if (!etPlaceLat.getText().toString().equals("") && !etPlaceLng.getText().toString().equals("")) {
-                    float latitude = Float.parseFloat(etPlaceLat.getText().toString());
-                    float longitude = Float.parseFloat(etPlaceLng.getText().toString());
-                    boolean result = dbHelper.InsertRecord(etPlaceName.getText().toString(), latitude, longitude);
+                    boolean result = dbHelper.InsertRecord(etPlaceName.getText().toString(), lat, lng);
                     if (result) {
                         showToast("Place Added");
                     }else{
                         showToast("Error Adding Place");
                     }
                     dbHelper.close();
-                }
                 break;
         }
     }
@@ -193,6 +188,8 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
                 Place place = PlaceAutocomplete.getPlace(this, data);
                 etPlaceName.setVisibility(View.VISIBLE);
                 etPlaceName.setText(place.getName());
+                lat = (float)place.getLatLng().latitude;
+                lng = (float)place.getLatLng().longitude;
                 btnAddPlace.setVisibility(View.VISIBLE);
             } else if (resultCode == PlaceAutocomplete.RESULT_ERROR) {
                 Status status = PlaceAutocomplete.getStatus(this, data);
@@ -210,6 +207,8 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        String[] mSelectionArgs = { mSearchString};
+        Log.i(TAG, "mSearchString = " + mSearchString);
         mSelectionArgs[0] = "%" + mSearchString + "%";
         // Starts the query
         return new CursorLoader(
@@ -220,13 +219,16 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
                 null);
     }
 
+
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        Log.i(TAG, "Load finished");
         mCursorAdapter.swapCursor(data);
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
+        Log.i(TAG, "Load reset");
         mCursorAdapter.swapCursor(null);
     }
 }
