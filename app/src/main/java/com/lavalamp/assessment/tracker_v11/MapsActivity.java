@@ -143,10 +143,15 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            Intent settingsIntent = new Intent(MapsActivity.this, SettingsActivity.class);
-            startActivity(settingsIntent);
-            return true;
+        switch(id){
+            case R.id.action_settings:
+                Intent settingsIntent = new Intent(MapsActivity.this, SettingsActivity.class);
+                startActivity(settingsIntent);
+                break;
+            case R.id.action_add_notification:
+                Intent notificationIntent = new Intent(MapsActivity.this, NotificationActivity.class);
+                startActivity(notificationIntent);
+                break;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -160,7 +165,6 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
         }catch(SecurityException sec){
 
         }
-
     }
 
     @Override

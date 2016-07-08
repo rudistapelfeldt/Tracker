@@ -13,27 +13,9 @@
     <TextView
         android:layout_width="300dp"
         android:layout_height="wrap_content"
-        android:text="@string/enter_number"
-        android:id="@+id/tvNumber"
-        android:textColor="@color/white"
-        android:layout_alignParentStart="true"
-        android:layout_toStartOf="@+id/contactsListView"
-        android:layout_above="@+id/contactsListView"
-        android:layout_alignEnd="@+id/contactsListView"
-        android:layout_alignParentTop="true" />
-
-    <View style="@style/Divider"
-        android:id="@+id/view"
-        android:layout_below="@+id/contactsListView"
-        android:layout_alignParentStart="true" />
-
-    <TextView
-        android:layout_width="300dp"
-        android:layout_height="wrap_content"
         android:text="@string/enter_radius"
         android:id="@+id/tvRadius"
         android:textColor="@color/white"
-        android:layout_below="@+id/view"
         android:layout_alignParentStart="true" />
 
     <EditText
@@ -68,14 +50,15 @@
         android:text="Add A Location"
         android:id="@+id/tvAddGeofence"
         android:textColor="@color/white"
-        android:layout_below="@+id/view2"
-        android:layout_alignParentStart="true" />
+        android:layout_below="@+id/btnSaveRadius"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="32dp" />
 
     <Button
         style="?android:attr/buttonStyleSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Find A Place"
+        android:text="Find A Location"
         android:id="@+id/btnPlaceFind"
         android:layout_below="@+id/tvAddGeofence"
         android:layout_alignParentStart="true" />
@@ -91,7 +74,7 @@
         android:singleLine="true"
         android:editable="false"
         android:visibility="invisible"
-        android:layout_below="@+id/btnPlaceFind"
+        android:layout_alignTop="@+id/view2"
         android:layout_alignParentStart="true" />
 
     <Button
@@ -101,29 +84,8 @@
         android:text="Add To Geofence List"
         android:id="@+id/btnAddPlaceGeofence"
         android:visibility="invisible"
-        android:layout_alignParentBottom="true"
+        android:layout_below="@+id/etPlaceName"
         android:layout_alignParentStart="true"
-        android:layout_marginBottom="47dp" />
-
-    <ListView
-        android:layout_width="wrap_content"
-        android:layout_height="55dp"
-        android:id="@+id/contactsListView"
-        android:choiceMode="multipleChoice"
-        android:background="@drawable/listview"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="47dp" />
-
-    <EditText
-        android:layout_width="300dp"
-        android:layout_height="wrap_content"
-        android:id="@+id/etName"
-        android:background="@drawable/edit_button_bg"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp"
-        android:maxLength="13"
-        android:singleLine="true"
-        android:layout_below="@+id/tvNumber" />
+        android:layout_marginTop="41dp" />
 
 </RelativeLayout>

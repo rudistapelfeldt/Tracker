@@ -20,6 +20,7 @@ import com.google.android.gms.location.GeofencingEvent;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Listener for geofence transition changes.
@@ -121,13 +122,11 @@ public class GeofenceTransitionsIntentService extends IntentService {
                 (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
         notificationManager.notify(0, builder);
-        String number = sharedPreferences.getString("Number", "");
-        if(!number.equals("")) {
+        Set<String> numbers = sharedPreferences.getStringSet("Recipients", null);
+        for (String number : numbers) {
             SmsManager sms = SmsManager.getDefault();
             String strMessage = notificationDetails + ". Location = " + lat + " , " + lng;
             sms.sendTextMessage(number, null, strMessage, null, null);
-        }else{
-            Toast.makeText(GeofenceTransitionsIntentService.this, "Set phone number to receive notifications", Toast.LENGTH_LONG).show();
         }
     }
 
