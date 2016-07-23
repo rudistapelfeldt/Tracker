@@ -1,8 +1,9 @@
 <resources>
-    <string name="app_name">Tracker</string>
-    <string name="title_activity_maps">Tracker</string>
+    <string name="app_name">NoteIf-I</string>
+    <string name="title_activity_maps">NoteIf-I Map</string>
     <string name="action_settings">Settings</string>
     <string name="action_notifications">Notifications</string>
+    <string name="action_plan_trip">Plan A Trip</string>
     <string name="contact_type_hint">Start typing contact name</string>
     <string name="contact_recipients_hint">Recipients added</string>
     <string name="enter_number">Please select a notification recipient</string>
@@ -20,4 +21,11 @@
     <string name="places">PLACES</string>
     <string name="button_clear">CLEAR RECIPIENTS</string>
     <string name="title_activity_notification">NotificationActivity</string>
+    <string name="title_activity_plan_trip">PlanTripActivity</string>
+
+    <!-- content plan trip strings -->
+    <string name="content_plan_trip_text_view_travel_from">Travelling From...</string>
+    <string name="content_plan_trip_text_view_origin">Origin</string>
+    <string name="content_plan_trip_text_view_destination">Destination</string>
+    <string name="content_plan_trip_text_view_mode">Mode Of Transport</string>
 </resources>

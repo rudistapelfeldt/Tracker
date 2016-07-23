@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.lavalamp.assessment.tracker_v11">
+    package="com.lavalamp.assessment.noteifi">
 
     <!--
          The ACCESS_COARSE/FINE_LOCATION permissions are not required to use
@@ -35,7 +35,7 @@
             android:value="@string/google_maps_key" />
 
         <activity
-            android:name=".MapsActivity"
+            android:name="com.lavalamp.assessment.com.mobile.swollestandroid.noteifi.MapsActivity"
             android:label="@string/title_activity_maps"
             android:launchMode="singleTop">
             android:screenOrientation="portrait"
@@ -47,21 +47,29 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".GeofenceTransitionsIntentService" />
+        <service android:name="com.lavalamp.assessment.com.mobile.swollestandroid.noteifi.GeofenceTransitionsIntentService" />
 
         <activity
-            android:name=".SettingsActivity"
+            android:name="com.lavalamp.assessment.com.mobile.swollestandroid.noteifi.SettingsActivity"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustPan" />
         <activity
-            android:name=".NotificationActivity"
+            android:name="com.lavalamp.assessment.com.mobile.swollestandroid.noteifi.NotificationActivity"
             android:label="@string/title_activity_notification"
             android:theme="@style/AppTheme.NoActionBar"
-            android:windowSoftInputMode="adjustPan"></activity><!-- ATTENTION: This was auto-generated to add Google Play services to your project for
-     App Indexing.  See https://g.co/AppIndexing/AndroidStudio for more information. -->
+            android:windowSoftInputMode="adjustPan" />
+        <!--
+ ATTENTION: This was auto-generated to add Google Play services to your project for
+     App Indexing.  See https://g.co/AppIndexing/AndroidStudio for more information.
+        -->
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
+
+        <activity
+            android:name="com.mobile.swollestandroid.noteifi.activity.PlanTripActivity"
+            android:label="@string/title_activity_plan_trip"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>
