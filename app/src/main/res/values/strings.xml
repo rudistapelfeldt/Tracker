@@ -28,4 +28,12 @@
     <string name="content_plan_trip_text_view_origin">Origin</string>
     <string name="content_plan_trip_text_view_destination">Destination</string>
     <string name="content_plan_trip_text_view_mode">Mode Of Transport</string>
+    <string name="content_plan_trip_text_view_departure_time">Departure Time</string>
+    <string name="content_plan_trip_edit_text_departure_time_hint">Select Departure Time</string>
+    <string-array name="mode_array">
+        <item>driving</item>
+        <item>walking</item>
+        <item>bicycling</item>
+        <item>transit</item>
+    </string-array>
 </resources>

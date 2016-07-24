@@ -3,6 +3,11 @@ package com.mobile.swollestandroid.noteifi.util;
 /**
  * Created by Rudolph on 2016/06/21.
  */
+
+import com.google.android.gms.maps.model.LatLng;
+
+import java.util.HashMap;
+
 /**
  * Constants used in this sample.
  */
@@ -10,6 +15,8 @@ public final class Constants {
 
     private Constants() {
     }
+
+    private static final HashMap<String, LatLng> GEO_MAP = new HashMap<>();
 
     public static String contactNumber;
 
@@ -23,4 +30,7 @@ public final class Constants {
 
     public static final String MY_PREFS = "trackerSharedPreferences";
 
+    public static HashMap<String, LatLng> getGeoMap() {
+        return GEO_MAP;
+    }
 }

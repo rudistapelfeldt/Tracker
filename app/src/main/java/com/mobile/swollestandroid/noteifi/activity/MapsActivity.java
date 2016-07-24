@@ -12,6 +12,7 @@ import android.database.Cursor;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -34,6 +35,8 @@ import android.widget.ListView;
 import android.widget.Toast;
 import android.widget.Toolbar;
 
+import com.google.android.gms.appindexing.Action;
+import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.Result;
@@ -75,12 +78,17 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
     private int mode;
     private DatabaseHelper databaseHelper;
     private ListView geofenceListView;
-    ArrayAdapter<Model> adapter;
+    private ArrayAdapter<Model> adapter;
     private List<Model> list = new ArrayList<Model>();
-    private HashMap<String, LatLng> geoMap;
+    private static HashMap<String, LatLng> geoMap;
     private HeaderViewListAdapter hlva;
     private MyAdapter postAdapter;
     private String TAG = "MapsActivity";
+    /**
+     * ATTENTION: This was auto-generated to implement the App Indexing API.
+     * See https://g.co/AppIndexing/AndroidStudio for more information.
+     */
+    private GoogleApiClient client;
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
@@ -92,10 +100,10 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
         sharedPreferences = getSharedPreferences(Constants.MY_PREFS, mode);
         // Set buttons
         mAddGeofencesButton = (Button) findViewById(R.id.btnAddGeofence);
-        mRemoveGeofenceButton = (Button)findViewById(R.id.btnRemoveGeofence);
+        mRemoveGeofenceButton = (Button) findViewById(R.id.btnRemoveGeofence);
         mRemoveGeofenceButton.setEnabled(false);
         //LocationManager init
-        locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         //Pending Intent  for Geofence
         mGeofencePendingIntent = null;
         //Google API Client build
@@ -105,10 +113,10 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
             showSettingsAlert();
         }
         databaseHelper = new DatabaseHelper(this);
-        geoMap = new HashMap<String, LatLng>();
-        geofenceListView = (ListView)findViewById(R.id.lvChooseGeofence);
+        geoMap = Constants.getGeoMap();
+        geofenceListView = (ListView) findViewById(R.id.lvChooseGeofence);
         LayoutInflater myinflater = getLayoutInflater();
-        ViewGroup myHeader = (ViewGroup)myinflater.inflate(R.layout.list_view_header, geofenceListView, false);
+        ViewGroup myHeader = (ViewGroup) myinflater.inflate(R.layout.list_view_header, geofenceListView, false);
         geofenceListView.addHeaderView(myHeader, null, false);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setActionBar(toolbar);
@@ -116,13 +124,15 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
 
-    private void initListView(){
+    private void initListView() {
         //fill hashmap with name, lat and lang from database
         populateMap();
-        //populate list for listview
-        adapter = new MyAdapter(this,populateList());
+        adapter = new MyAdapter(this, populateList());
         geofenceListView.setAdapter(adapter);
         geofenceListView.setOnItemClickListener(this);
     }
@@ -149,7 +159,7 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        switch(id){
+        switch (id) {
             case R.id.action_settings:
                 Intent settingsIntent = new Intent(MapsActivity.this, SettingsActivity.class);
                 startActivity(settingsIntent);
@@ -168,7 +178,7 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
             mMap = googleMap;
             enableMyLocation();
             mGoogleApiClient.connect();
-        }catch(SecurityException sec){
+        } catch (SecurityException sec) {
 
         }
     }
@@ -186,7 +196,7 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
             mLocationRequest.setFastestInterval(3000); //3 seconds
             mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
-        }catch(SecurityException sec){
+        } catch (SecurityException sec) {
             showToast(sec.getMessage());
         }
     }
@@ -195,6 +205,7 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
     public void onConnectionSuspended(int i) {
 
     }
+
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
@@ -202,9 +213,9 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
 
     @Override
     public void onResult(@NonNull Result result) {
-        if(result.getStatus().isSuccess()) {
+        if (result.getStatus().isSuccess()) {
             showToast(getString(isGeofenceAdded ? R.string.geofences_added : R.string.geofences_removed));
-        }else{
+        } else {
             showToast("Error");
         }
     }
@@ -238,7 +249,7 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
     protected void populateGeofenceList(float radius, List<String> selected) {
         //Init Geofence list
         mGeofenceList = new ArrayList<Geofence>();
-        for(String check : selected) {
+        for (String check : selected) {
 
             double lat = geoMap.get(check).latitude;
             double lng = geoMap.get(check).longitude;
@@ -259,10 +270,10 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
     //Add Geofence method
 
     public void addGeofencesButtonHandler(View view) {
-        hlva = (HeaderViewListAdapter)geofenceListView.getAdapter();
+        hlva = (HeaderViewListAdapter) geofenceListView.getAdapter();
         postAdapter = (MyAdapter) hlva.getWrappedAdapter();
         ;
-        if (postAdapter.getSelectBoxes().size() == 0){
+        if (postAdapter.getSelectBoxes().size() == 0) {
             AlertDialog.Builder addPlace = new AlertDialog.Builder(this);
             addPlace.setIcon(R.mipmap.ic_launcher).setTitle("Add Geofence Places")
                     .setMessage("Please add a place. If \"PLACES\" is emply then find a place in settings")
@@ -273,7 +284,7 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
                         }
                     });
             addPlace.show();
-        }else {
+        } else {
             float radius = sharedPreferences.getFloat("GeofenceRadius", 0);
             if (!mGoogleApiClient.isConnected()) {
                 showToast(getString(R.string.not_connected));
@@ -346,14 +357,14 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
         return builder.build();
     }
 
-    private void showToast(String text){
-        Toast.makeText(this,text, Toast.LENGTH_LONG).show();
+    private void showToast(String text) {
+        Toast.makeText(this, text, Toast.LENGTH_LONG).show();
     }
 
     private void enableMyLocation() {
-        try{
+        try {
             mMap.setMyLocationEnabled(true);
-        }catch(SecurityException sec){
+        } catch (SecurityException sec) {
             showToast(sec.getMessage());
         }
     }
@@ -382,12 +393,11 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
         }
     }
 
-    private void populateMap(){
+    private void populateMap() {
         Cursor cursor = databaseHelper.getAllRecords();
-        if (cursor.getCount() > 0){
+        if (cursor.getCount() > 0) {
             cursor.moveToFirst();
-            while (!cursor.isAfterLast()){
-                Log.i("HASHMAPENTRY", "NUMBER " + cursor.getString(cursor.getColumnIndex("NAME")));
+            while (!cursor.isAfterLast()) {
                 geoMap.put(cursor.getString(cursor.getColumnIndex("NAME")), new LatLng(cursor.getDouble(cursor.getColumnIndex("LATITUDE")), cursor.getDouble(cursor.getColumnIndex("LONGITUDE"))));
                 cursor.moveToNext();
             }
@@ -396,10 +406,10 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
         databaseHelper.close();
     }
 
-    private List<Model> populateList(){
+    private List<Model> populateList() {
         list = new ArrayList<>();
-        if (geoMap.size() > 0){
-            for (Map.Entry<String, LatLng> entry : geoMap.entrySet()){
+        if (geoMap.size() > 0) {
+            for (Map.Entry<String, LatLng> entry : geoMap.entrySet()) {
                 list.add(new Model(entry.getKey()));
             }
         }
@@ -430,6 +440,46 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
 
         }
 
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client.connect();
+        Action viewAction = Action.newAction(
+                Action.TYPE_VIEW, // TODO: choose an action type.
+                "Maps Page", // TODO: Define a title for the content shown.
+                // TODO: If you have web page content that matches this app activity's content,
+                // make sure this auto-generated web page URL is correct.
+                // Otherwise, set the URL to null.
+                Uri.parse("http://host/path"),
+                // TODO: Make sure this auto-generated app URL is correct.
+                Uri.parse("android-app://com.mobile.swollestandroid.noteifi.activity/http/host/path")
+        );
+        AppIndex.AppIndexApi.start(client, viewAction);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        Action viewAction = Action.newAction(
+                Action.TYPE_VIEW, // TODO: choose an action type.
+                "Maps Page", // TODO: Define a title for the content shown.
+                // TODO: If you have web page content that matches this app activity's content,
+                // make sure this auto-generated web page URL is correct.
+                // Otherwise, set the URL to null.
+                Uri.parse("http://host/path"),
+                // TODO: Make sure this auto-generated app URL is correct.
+                Uri.parse("android-app://com.mobile.swollestandroid.noteifi.activity/http/host/path")
+        );
+        AppIndex.AppIndexApi.end(client, viewAction);
+        client.disconnect();
     }
 }
 

@@ -92,5 +92,33 @@
             android:id="@+id/spinMode"
             android:layout_weight="0.4"/>
         </LinearLayout>
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal" >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/content_plan_trip_text_view_mode"
+                android:id="@+id/tvDepartureTime"
+                android:layout_gravity="center_horizontal" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal" >
+
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/etDepartureTime"
+                android:hint="@string/content_plan_trip_edit_text_departure_time_hint"
+                android:layout_gravity="center_horizontal" />
+        </LinearLayout>
     </LinearLayout>
 </RelativeLayout>
