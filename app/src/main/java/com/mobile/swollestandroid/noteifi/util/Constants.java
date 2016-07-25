@@ -20,6 +20,8 @@ public final class Constants {
 
     public static String contactNumber;
 
+    public static final String GOOGLE_DIRECTIONS_SERVER_ID = "AIzaSyBgWKtr09DIjF5xKN3ZeNAVp9QVxVHLoAE";
+
     public static final String PACKAGE_NAME = "com.google.android.gms.location.Geofence";
 
     public static final long GEOFENCE_EXPIRATION_IN_HOURS = 12;

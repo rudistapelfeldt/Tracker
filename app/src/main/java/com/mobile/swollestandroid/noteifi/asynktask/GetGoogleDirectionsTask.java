@@ -26,7 +26,7 @@ public class GetGoogleDirectionsTask extends AsyncTask<String, Integer, GoogleDi
 
     //private ArrayList<Model> itemArray = new ArrayList<>();
     public AsyncGoogleDirectionResponse delegate = null;
-    private ProgressBar progressBar;
+    //private ProgressBar progressBar;
 
     public GetGoogleDirectionsTask(AsyncGoogleDirectionResponse response)
     {
@@ -34,23 +34,23 @@ public class GetGoogleDirectionsTask extends AsyncTask<String, Integer, GoogleDi
         delegate = response;
     }
 
-    public void setProgressBar(ProgressBar bar) {
-        this.progressBar = bar;
-    }
+    //public void setProgressBar(ProgressBar bar) {
+    //    this.progressBar = bar;
+    //}
 
     @Override
     protected void onProgressUpdate(Integer... values) {
         super.onProgressUpdate(values);
-        if (this.progressBar != null) {
-            progressBar.setProgress(values[0]);
-        }
+        //if (this.progressBar != null) {
+         //   progressBar.setProgress(values[0]);
+        //}
     }
 
     @Override
     protected void onPostExecute(GoogleDirectionsResponseHandler model) {
         super.onPostExecute(model);
         delegate.processFinish(model);
-        progressBar.setVisibility(View.GONE);
+        //progressBar.setVisibility(View.GONE);
     }
 
     @Override

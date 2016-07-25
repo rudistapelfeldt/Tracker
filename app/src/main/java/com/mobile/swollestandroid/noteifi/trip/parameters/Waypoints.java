@@ -1,17 +1,15 @@
 package com.mobile.swollestandroid.noteifi.trip.parameters;
 
+import java.util.ArrayList;
+
 /**
  * Created by Rudi on 7/24/2016.
  */
 public class Waypoints {
 
-    private long placeID;
+    private ArrayList<String> placeID;
 
-    public long getPlaceID() {
+    public ArrayList<String> getPlaceID() {
         return placeID;
-    }
-
-    public void setPlaceID(long placeID) {
-        this.placeID = placeID;
     }
 }

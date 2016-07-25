@@ -103,7 +103,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/content_plan_trip_text_view_mode"
+                android:text="@string/content_plan_trip_text_view_departure_time"
                 android:id="@+id/tvDepartureTime"
                 android:layout_gravity="center_horizontal" />
         </LinearLayout>

@@ -7,6 +7,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -25,11 +26,17 @@ import com.mobile.swollestandroid.noteifi.util.Constants;
 import com.mobile.swollestandroid.noteifi.util.GoogleDirectionsResponseHandler;
 import com.mobile.swollestandroid.noteifi.util.Model;
 
+import java.io.File;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 
 public class PlanTripActivity extends AppCompatActivity implements View.OnClickListener, AdapterView.OnItemSelectedListener {
@@ -49,8 +56,6 @@ public class PlanTripActivity extends AppCompatActivity implements View.OnClickL
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_plan_trip);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
         //****spinner adapters****
         //origin and destination
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item,getList());
@@ -98,16 +103,36 @@ public class PlanTripActivity extends AppCompatActivity implements View.OnClickL
         switch (v.getId()){
             case R.id.etDepartureTime:
                 final Calendar mCurrentDate = Calendar.getInstance();
+                final int mDay = mCurrentDate.get(Calendar.DAY_OF_MONTH);
+                final int mMonth = mCurrentDate.get(Calendar.MONTH);
+                final int mYear = mCurrentDate.get(Calendar.YEAR);
+                final int mHour = mCurrentDate.get(Calendar.HOUR_OF_DAY);
+                final int mMinute = mCurrentDate.get(Calendar.MINUTE);
 
-                int mHour = mCurrentDate.get(Calendar.HOUR_OF_DAY);
-                int mMinute = mCurrentDate.get(Calendar.MINUTE);
-                final long currentTime = 3600 * mHour + 60 * + mMinute;
                 TimePickerDialog mTimePicker;
                 mTimePicker = new TimePickerDialog(this, new TimePickerDialog.OnTimeSetListener(){
                     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
                         etDepartureTime.setText("" + hourOfDay + ":" + minute + ":00");
-                        mCurrentDate.setTimeInMillis(currentTime / 1000L);
-                        departureTime = mCurrentDate.getTimeInMillis() * 1000L;
+                        mCurrentDate.setTimeInMillis(31556926 * mYear + 2629743 + mMonth + 86400 * mDay  + 3600  * hourOfDay + 60 *  minute);
+                        Log.i("NOTEIFILOG", "time in milliseconds = " + mCurrentDate.getTimeInMillis());
+                        departureTime = mCurrentDate.getTimeInMillis();
+                        Log.i("NOTEIFILOG", "year format = " + mYear);
+                        try {
+                            Log.i("NOTEIFILOG", "DATE = " + new java.text.SimpleDateFormat("MM/dd/yyyy HH:mm:ss").parse(mDay + File.separator + mMonth + File.separator + mYear + " " + hourOfDay + ":" + minute + ":00"));
+
+                            departureTime = new java.text.SimpleDateFormat("MM/dd/yyyy HH:mm:ss").parse(mDay + File.separator + mMonth + File.separator + mYear + " " + hourOfDay + ":" + minute + ":00").getTime() / 1000;
+                            Log.i("NOTEIFILOG", "DATE IN SECONDS = " + departureTime);
+
+                            /*********** back to date format
+                             *
+                             *
+                             */
+                            long epoch = departureTime * 1000;
+                            Date newDate = new Date(epoch);
+                            Log.i("NOTEIFILOG", "new date = " + newDate);
+                        }catch(ParseException parseException){
+                            parseException.printStackTrace();
+                        }
 
                     }
                 }, mHour, mMinute, true);
@@ -121,12 +146,13 @@ public class PlanTripActivity extends AppCompatActivity implements View.OnClickL
 
                     }
                 });
+                task.execute(getGoogleDirectionsUrl());
         }
     }
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        switch(view.getId()){
+        switch(parent.getId()){
             case R.id.spinDestination:
                 destination = geoMap.get(parent.getItemAtPosition(position));
                 break;
@@ -157,21 +183,21 @@ public class PlanTripActivity extends AppCompatActivity implements View.OnClickL
     private String getGoogleDirectionsUrl(){
         if (origin != null && destination != null && mode != null && departureTime > 0) {
             String url = "https://maps.googleapis.com/maps/api/directions/json?origin=" + origin.latitude + "," + origin.longitude + "&destination="
-                    + destination.latitude + "," + destination.longitude + "&mode=" + mode + "&departure_time=" + departureTime + "&key=" + R.string.google_maps_key;
+                    + destination.latitude + "," + destination.longitude + "&mode=" + mode + "&departure_time=" + departureTime + "&key=" + Constants.GOOGLE_DIRECTIONS_SERVER_ID;
             return url;
         }else if(origin != null && destination != null && mode == null && departureTime == 0){
             String url = "https://maps.googleapis.com/maps/api/directions/json?origin=" + origin.latitude + "," + origin.longitude + "&destination="
-                    + destination.latitude + "," + destination.longitude + "&key=" + R.string.google_maps_key;
+                    + destination.latitude + "," + destination.longitude + "&key=" + Constants.GOOGLE_DIRECTIONS_SERVER_ID;
             return url;
 
         }else if(origin != null && destination != null && mode != null && departureTime == 0){
             String url = "https://maps.googleapis.com/maps/api/directions/json?origin=" + origin.latitude + "," + origin.longitude + "&destination="
-                    + destination.latitude + "," + destination.longitude + "&mode=" + mode + "&key=" + R.string.google_maps_key;
+                    + destination.latitude + "," + destination.longitude + "&mode=" + mode + "&key=" + Constants.GOOGLE_DIRECTIONS_SERVER_ID;
             return url;
 
         }else if(origin != null && destination != null && mode == null && departureTime > 0) {
             String url = "https://maps.googleapis.com/maps/api/directions/json?origin=" + origin.latitude + "," + origin.longitude + "&destination="
-                    + destination.latitude + "," + destination.longitude + "&departure_time=" + departureTime + "&key=" + R.string.google_maps_key;
+                    + destination.latitude + "," + destination.longitude + "&departure_time=" + departureTime + "&key=" + Constants.GOOGLE_DIRECTIONS_SERVER_ID;
             return url;
         }
         return null;

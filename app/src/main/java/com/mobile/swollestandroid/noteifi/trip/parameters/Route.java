@@ -2,6 +2,7 @@ package com.mobile.swollestandroid.noteifi.trip.parameters;
 
 import com.google.android.gms.maps.model.LatLng;
 
+import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 
@@ -10,7 +11,7 @@ import java.util.ArrayList;
  */
 public class Route {
 
-    private String summary;
+    private ArrayList<String> summary;
     private ArrayList<LatLng> overview_polyline;
     private ArrayList<String> copyrights;
     private ArrayList<String> warnings;
@@ -20,12 +21,8 @@ public class Route {
         return legs;
     }
 
-    public String getSummary() {
+    public ArrayList<String> getSummary() {
         return summary;
-    }
-
-    public void setSummary(String summary) {
-        this.summary = summary;
     }
 
     public ArrayList<LatLng> getOverview_polyline() {
