@@ -10,6 +10,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.Spinner;
@@ -17,8 +18,11 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
-import com.lavalamp.assessment.noteifi.R;
+import com.mobile.swollestandroid.noteifi.activity.R;
+import com.mobile.swollestandroid.noteifi.asynktask.GetGoogleDirectionsTask;
+import com.mobile.swollestandroid.noteifi.interfaces.AsyncGoogleDirectionResponse;
 import com.mobile.swollestandroid.noteifi.util.Constants;
+import com.mobile.swollestandroid.noteifi.util.GoogleDirectionsResponseHandler;
 import com.mobile.swollestandroid.noteifi.util.Model;
 
 import java.util.ArrayList;
@@ -35,10 +39,11 @@ public class PlanTripActivity extends AppCompatActivity implements View.OnClickL
     private List<String> list;
     private EditText etDepartureTime;
     //url parameters
-    private long departureTime;
+    private long departureTime = 0;
     private String mode;
     private LatLng origin;
     private LatLng destination;
+    private Button btnFindRoutes;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +74,11 @@ public class PlanTripActivity extends AppCompatActivity implements View.OnClickL
         //edit text
         etDepartureTime = (EditText)findViewById(R.id.etDepartureTime);
         etDepartureTime.setOnClickListener(this);
+
+        //button
+        btnFindRoutes = (Button)findViewById(R.id.btnGetRoutes);
+        btnFindRoutes.setOnClickListener(this);
+
 
     }
 
@@ -103,6 +113,14 @@ public class PlanTripActivity extends AppCompatActivity implements View.OnClickL
                 }, mHour, mMinute, true);
                 mTimePicker.setTitle("Select Time");
                 mTimePicker.show();
+                break;
+            case R.id.btnGetRoutes:
+                GetGoogleDirectionsTask task = new GetGoogleDirectionsTask(new AsyncGoogleDirectionResponse() {
+                    @Override
+                    public void processFinish(GoogleDirectionsResponseHandler responseHandler) {
+
+                    }
+                });
         }
     }
 
@@ -134,6 +152,29 @@ public class PlanTripActivity extends AppCompatActivity implements View.OnClickL
                 showToast("Please select a mode");
                 break;
         }
+    }
+
+    private String getGoogleDirectionsUrl(){
+        if (origin != null && destination != null && mode != null && departureTime > 0) {
+            String url = "https://maps.googleapis.com/maps/api/directions/json?origin=" + origin.latitude + "," + origin.longitude + "&destination="
+                    + destination.latitude + "," + destination.longitude + "&mode=" + mode + "&departure_time=" + departureTime + "&key=" + R.string.google_maps_key;
+            return url;
+        }else if(origin != null && destination != null && mode == null && departureTime == 0){
+            String url = "https://maps.googleapis.com/maps/api/directions/json?origin=" + origin.latitude + "," + origin.longitude + "&destination="
+                    + destination.latitude + "," + destination.longitude + "&key=" + R.string.google_maps_key;
+            return url;
+
+        }else if(origin != null && destination != null && mode != null && departureTime == 0){
+            String url = "https://maps.googleapis.com/maps/api/directions/json?origin=" + origin.latitude + "," + origin.longitude + "&destination="
+                    + destination.latitude + "," + destination.longitude + "&mode=" + mode + "&key=" + R.string.google_maps_key;
+            return url;
+
+        }else if(origin != null && destination != null && mode == null && departureTime > 0) {
+            String url = "https://maps.googleapis.com/maps/api/directions/json?origin=" + origin.latitude + "," + origin.longitude + "&destination="
+                    + destination.latitude + "," + destination.longitude + "&departure_time=" + departureTime + "&key=" + R.string.google_maps_key;
+            return url;
+        }
+        return null;
     }
 
     private void showToast(String message){

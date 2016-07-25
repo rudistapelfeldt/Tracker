@@ -57,7 +57,7 @@ import com.mobile.swollestandroid.noteifi.util.DatabaseHelper;
 import com.mobile.swollestandroid.noteifi.service.GeofenceTransitionsIntentService;
 import com.mobile.swollestandroid.noteifi.util.Model;
 import com.mobile.swollestandroid.noteifi.adapter.MyAdapter;
-import com.lavalamp.assessment.noteifi.R;
+import com.mobile.swollestandroid.noteifi.activity.R;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -457,7 +457,7 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
                 // Otherwise, set the URL to null.
                 Uri.parse("http://host/path"),
                 // TODO: Make sure this auto-generated app URL is correct.
-                Uri.parse("android-app://com.mobile.swollestandroid.noteifi.activity/http/host/path")
+                Uri.parse("android-app://com.mobile.swollestandroid.noteifi/http/host/path")
         );
         AppIndex.AppIndexApi.start(client, viewAction);
     }

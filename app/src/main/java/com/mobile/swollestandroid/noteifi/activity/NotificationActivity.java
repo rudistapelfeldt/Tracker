@@ -27,7 +27,7 @@ import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.mobile.swollestandroid.noteifi.util.Constants;
-import com.lavalamp.assessment.noteifi.R;
+import com.mobile.swollestandroid.noteifi.activity.R;
 
 import java.util.HashSet;
 import java.util.Set;

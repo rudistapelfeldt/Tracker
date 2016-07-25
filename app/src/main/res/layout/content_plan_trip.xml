@@ -18,7 +18,8 @@
         android:layout_height="match_parent"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
-        android:weightSum="1">
+        android:weightSum="1"
+        android:id="@+id/linearLayout">
 
         <TextView
             android:layout_width="wrap_content"
@@ -120,5 +121,22 @@
                 android:hint="@string/content_plan_trip_edit_text_departure_time_hint"
                 android:layout_gravity="center_horizontal" />
         </LinearLayout>
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal">
+
+            <Button
+                style="?android:attr/buttonStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/content_plan_trip_button_find_routes"
+                android:id="@+id/btnGetRoutes"
+                android:layout_gravity="center_horizontal" />
+        </LinearLayout>
+
     </LinearLayout>
+
 </RelativeLayout>

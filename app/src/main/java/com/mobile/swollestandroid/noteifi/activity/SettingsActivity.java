@@ -18,7 +18,7 @@ import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 import com.mobile.swollestandroid.noteifi.util.Constants;
 import com.mobile.swollestandroid.noteifi.util.DatabaseHelper;
-import com.lavalamp.assessment.noteifi.R;
+import com.mobile.swollestandroid.noteifi.activity.R;
 
 public class SettingsActivity extends AppCompatActivity implements View.OnClickListener{
     private Button btnSaveRadius,  btnPlaceFind, btnAddPlace;

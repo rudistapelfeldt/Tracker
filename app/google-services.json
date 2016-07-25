@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "463483845448",
+    "firebase_url": "https://note-if-i.firebaseio.com",
+    "project_id": "note-if-i",
+    "storage_bucket": "note-if-i.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:463483845448:android:fc7c0be0f91783da",
+        "android_client_info": {
+          "package_name": "com.mobile.swollestandroid.noteifi.activity"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "463483845448-8c1rstarb9ad5qfbtm404qtuubii33vf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mobile.swollestandroid.noteifi.activity",
+            "certificate_hash": "C2B7F92E25F317938C4D39AAC28861A23E216800"
+          }
+        },
+        {
+          "client_id": "463483845448-i7flnrkbi7jmbh2rosj0dsdntsfuo2c8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAGFNEg_Y0OIqSZnrb75g68LVzC0na8kPw"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "463483845448-i7flnrkbi7jmbh2rosj0dsdntsfuo2c8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -30,6 +30,7 @@
     <string name="content_plan_trip_text_view_mode">Mode Of Transport</string>
     <string name="content_plan_trip_text_view_departure_time">Departure Time</string>
     <string name="content_plan_trip_edit_text_departure_time_hint">Select Departure Time</string>
+    <string name="content_plan_trip_button_find_routes">Find Routes</string>
     <string-array name="mode_array">
         <item>driving</item>
         <item>walking</item>
