@@ -15,6 +15,6 @@
     <item
         android:id="@+id/action_plan_journey"
         android:orderInCategory="300"
-        android:title="@string/action_notifications"
+        android:title="@string/action_plan_trip"
         app:showAsAction="never" />
 </menu>

@@ -9,7 +9,7 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 
 import com.mobile.swollestandroid.noteifi.util.Model;
-import com.mobile.swollestandroid.noteifi.activity.R;
+import com.mobile.swollestandroid.noteifi.R;
 
 import java.util.ArrayList;
 import java.util.List;

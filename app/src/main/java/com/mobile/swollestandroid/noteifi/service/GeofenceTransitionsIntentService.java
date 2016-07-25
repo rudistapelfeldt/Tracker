@@ -17,9 +17,9 @@ import android.widget.Toast;
 
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingEvent;
-import com.mobile.swollestandroid.noteifi.util.Constants;
-import com.mobile.swollestandroid.noteifi.activity.R;
 import com.mobile.swollestandroid.noteifi.activity.MapsActivity;
+import com.mobile.swollestandroid.noteifi.util.Constants;
+import com.mobile.swollestandroid.noteifi.R;
 
 import java.util.ArrayList;
 import java.util.List;

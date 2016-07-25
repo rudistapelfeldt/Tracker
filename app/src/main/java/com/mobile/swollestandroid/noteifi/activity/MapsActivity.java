@@ -57,12 +57,14 @@ import com.mobile.swollestandroid.noteifi.util.DatabaseHelper;
 import com.mobile.swollestandroid.noteifi.service.GeofenceTransitionsIntentService;
 import com.mobile.swollestandroid.noteifi.util.Model;
 import com.mobile.swollestandroid.noteifi.adapter.MyAdapter;
-import com.mobile.swollestandroid.noteifi.activity.R;
+import com.mobile.swollestandroid.noteifi.R;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.mobile.swollestandroid.noteifi.R.layout.activity_maps2;
 
 public class MapsActivity extends FragmentActivity implements ListView.OnItemClickListener, LocationListener, OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, ResultCallback {
 
@@ -94,7 +96,7 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_maps);
+        setContentView(activity_maps2);
         //SharedPreferences
         mode = Activity.MODE_PRIVATE;
         sharedPreferences = getSharedPreferences(Constants.MY_PREFS, mode);
@@ -167,6 +169,10 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
             case R.id.action_add_notification:
                 Intent notificationIntent = new Intent(MapsActivity.this, NotificationActivity.class);
                 startActivity(notificationIntent);
+                break;
+            case R.id.action_plan_journey:
+                Intent planTripIntent = new Intent(MapsActivity.this, PlanTripActivity.class);
+                startActivity(planTripIntent);
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -449,17 +455,17 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client.connect();
-        Action viewAction = Action.newAction(
+        /*Action viewAction = Action.newAction(
                 Action.TYPE_VIEW, // TODO: choose an action type.
                 "Maps Page", // TODO: Define a title for the content shown.
                 // TODO: If you have web page content that matches this app activity's content,
                 // make sure this auto-generated web page URL is correct.
                 // Otherwise, set the URL to null.
-                Uri.parse("http://host/path"),
+                Uri.parse(null),
                 // TODO: Make sure this auto-generated app URL is correct.
                 Uri.parse("android-app://com.mobile.swollestandroid.noteifi/http/host/path")
         );
-        AppIndex.AppIndexApi.start(client, viewAction);
+        AppIndex.AppIndexApi.start(client, viewAction);*/
     }
 
     @Override
@@ -468,18 +474,18 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
 
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
-        Action viewAction = Action.newAction(
+        /*Action viewAction = Action.newAction(
                 Action.TYPE_VIEW, // TODO: choose an action type.
                 "Maps Page", // TODO: Define a title for the content shown.
                 // TODO: If you have web page content that matches this app activity's content,
                 // make sure this auto-generated web page URL is correct.
                 // Otherwise, set the URL to null.
-                Uri.parse("http://host/path"),
+                Uri.parse(null),
                 // TODO: Make sure this auto-generated app URL is correct.
                 Uri.parse("android-app://com.mobile.swollestandroid.noteifi.activity/http/host/path")
         );
         AppIndex.AppIndexApi.end(client, viewAction);
-        client.disconnect();
+        client.disconnect();*/
     }
 }
 

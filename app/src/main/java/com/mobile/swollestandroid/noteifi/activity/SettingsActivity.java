@@ -18,7 +18,7 @@ import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 import com.mobile.swollestandroid.noteifi.util.Constants;
 import com.mobile.swollestandroid.noteifi.util.DatabaseHelper;
-import com.mobile.swollestandroid.noteifi.activity.R;
+import com.mobile.swollestandroid.noteifi.R;
 
 public class SettingsActivity extends AppCompatActivity implements View.OnClickListener{
     private Button btnSaveRadius,  btnPlaceFind, btnAddPlace;
@@ -110,6 +110,12 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
                 showToast("Operation Canceled");
             }
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
     }
 
     private void showToast(String text){

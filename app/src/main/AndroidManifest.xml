@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.mobile.swollestandroid.noteifi.activity">
+    package="com.mobile.swollestandroid.noteifi">
 
     <!--
          The ACCESS_COARSE/FINE_LOCATION permissions are not required to use
@@ -35,6 +35,8 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
+        <service android:name="com.mobile.swollestandroid.noteifi.service.GeofenceTransitionsIntentService" />
+
         <activity
             android:name="com.mobile.swollestandroid.noteifi.activity.MapsActivity"
             android:label="@string/title_activity_maps"
@@ -47,8 +49,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <service android:name="com.mobile.swollestandroid.noteifi.service.GeofenceTransitionsIntentService" />
 
         <activity
             android:name="com.mobile.swollestandroid.noteifi.activity.SettingsActivity"
@@ -69,8 +69,8 @@
 
         <activity
             android:name="com.mobile.swollestandroid.noteifi.activity.PlanTripActivity"
-            android:label="@string/title_activity_plan_trip"
-            android:theme="@style/AppTheme.NoActionBar"/>
+            android:label="@string/title_activity_plan_trip"/>
+
     </application>
 
 </manifest>

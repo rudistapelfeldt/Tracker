@@ -18,7 +18,7 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
-import com.mobile.swollestandroid.noteifi.activity.R;
+import com.mobile.swollestandroid.noteifi.R;
 import com.mobile.swollestandroid.noteifi.asynktask.GetGoogleDirectionsTask;
 import com.mobile.swollestandroid.noteifi.interfaces.AsyncGoogleDirectionResponse;
 import com.mobile.swollestandroid.noteifi.util.Constants;
