@@ -67,6 +67,7 @@ public class GeofenceTransitionsIntentService extends IntentService {
                 //geofenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT) {
             switch (geofenceTransition) {
                 case Geofence.GEOFENCE_TRANSITION_ENTER:
+                    Log.i(TAG, "GEO ENTERED");
                     transition();
                     break;
                 case Geofence.GEOFENCE_TRANSITION_EXIT:
@@ -126,10 +127,12 @@ public class GeofenceTransitionsIntentService extends IntentService {
 
         notificationManager.notify(0, builder);
         Set<String> numbers = sharedPreferences.getStringSet("Recipients", null);
-        for (String number : numbers) {
-            SmsManager sms = SmsManager.getDefault();
-            String strMessage = notificationDetails + ". Location = " + lat + " , " + lng;
-            sms.sendTextMessage(number, null, strMessage, null, null);
+        if(numbers != null) {
+            for (String number : numbers) {
+                SmsManager sms = SmsManager.getDefault();
+                String strMessage = notificationDetails + ". Location = " + lat + " , " + lng;
+                sms.sendTextMessage(number, null, strMessage, null, null);
+            }
         }
     }
 

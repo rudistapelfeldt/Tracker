@@ -12,10 +12,10 @@ public class Steps {
         private String htmlInstructions;
         private String distance;
         private String duration;
-        private LatLng startLocation;
-        private LatLng endLocation;
+        private LatLng startLocation = null;
+        private LatLng endLocation = null;
         private String polyline;
-        private ArrayList<String> innersteps; //for transit mode
+        private ArrayList<String> innersteps = new ArrayList<>(); //for transit mode
 
         public String getHtmlInstructions() {
             return htmlInstructions;

@@ -11,11 +11,11 @@ import java.util.ArrayList;
  */
 public class Route {
 
-    private ArrayList<String> summary;
-    private ArrayList<LatLng> overview_polyline;
-    private ArrayList<String> copyrights;
-    private ArrayList<String> warnings;
-    private ArrayList<Legs> legs;
+    private ArrayList<String> summary = new ArrayList<>();
+    private ArrayList<LatLng> overview_polyline = new ArrayList<>();
+    private ArrayList<String> copyrights = new ArrayList<>();
+    private ArrayList<String> warnings = new ArrayList<>();
+    private ArrayList<Legs> legs = new ArrayList<>();
 
     public ArrayList<Legs> getLegs() {
         return legs;

@@ -30,6 +30,8 @@ public final class Constants {
             GEOFENCE_EXPIRATION_IN_HOURS * 60 * 60 * 1000;
     public static float GEOFENCE_RADIUS_IN_METERS;
 
+    public static final int GEOFENCE_POINTS_RADIUS = 60;
+
     public static final String MY_PREFS = "trackerSharedPreferences";
 
     public static HashMap<String, LatLng> getGeoMap() {

@@ -52,6 +52,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
+import com.mobile.swollestandroid.noteifi.trip.parameters.Steps;
 import com.mobile.swollestandroid.noteifi.util.Constants;
 import com.mobile.swollestandroid.noteifi.util.DatabaseHelper;
 import com.mobile.swollestandroid.noteifi.service.GeofenceTransitionsIntentService;
@@ -68,14 +69,15 @@ import static com.mobile.swollestandroid.noteifi.R.layout.activity_maps2;
 
 public class MapsActivity extends FragmentActivity implements ListView.OnItemClickListener, LocationListener, OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, ResultCallback {
 
-    private GoogleMap mMap;
+    private static GoogleMap mMap;
     private LocationManager locationManager;
-    private PendingIntent mGeofencePendingIntent;
-    protected ArrayList<Geofence> mGeofenceList;
-    private Button mAddGeofencesButton, mRemoveGeofenceButton;
-    protected GoogleApiClient mGoogleApiClient;
+    private static PendingIntent mGeofencePendingIntent;
+    protected static ArrayList<Geofence> mGeofenceList;
+    private static Button mAddGeofencesButton, mRemoveGeofenceButton;
+    public static GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
     private boolean isGeofenceAdded = false;
+    private static Context mContext;
     private SharedPreferences sharedPreferences;
     private int mode;
     private DatabaseHelper databaseHelper;
@@ -90,13 +92,14 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
      */
-    private GoogleApiClient client;
+    public static GoogleApiClient client;
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(activity_maps2);
+        mContext = this;
         //SharedPreferences
         mode = Activity.MODE_PRIVATE;
         sharedPreferences = getSharedPreferences(Constants.MY_PREFS, mode);
@@ -273,6 +276,26 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
         }
     }
 
+    public static void populateStepsGeofenceList(float radius, List<Steps> steps) {
+        //Init Geofence list
+        mGeofenceList = new ArrayList<Geofence>();
+        for(Steps s : steps){
+            double lat = s.getStartLocation().latitude;
+            double lng = s.getStartLocation().longitude;
+            mGeofenceList.add(new Geofence.Builder()
+                    .setRequestId(s.getStartLocation().toString())
+                    .setCircularRegion(
+                            lat,
+                            lng,
+                            radius
+                    )
+                    .setExpirationDuration(Constants.GEOFENCE_EXPIRATION_IN_MILLISECONDS)
+                    .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER |
+                            Geofence.GEOFENCE_TRANSITION_EXIT)
+                    .build());
+        }
+    }
+
     //Add Geofence method
 
     public void addGeofencesButtonHandler(View view) {
@@ -316,7 +339,7 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
                                 .strokeColor(Color.RED)
                                 .fillColor(Color.BLUE));
                         isGeofenceAdded = true;
-                        setButtonsEnabledState();
+                        setButtonsEnabledState(isGeofenceAdded);
                     } catch (SecurityException securityException) {
                         showToast(securityException.getMessage());
                     }
@@ -325,6 +348,9 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
         }
     }
 
+    public static GoogleMap getMap(){
+        return mMap;
+    }
     //Remove Geofence Method
 
     public void removeGeofencesButtonHandler(View view) {
@@ -340,23 +366,23 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
             mMap.clear();
             isGeofenceAdded = false;
             batchPickUnselectAll();
-            postAdapter.notifyDataSetChanged();
-            setButtonsEnabledState();
+            //postAdapter.notifyDataSetChanged();
+            setButtonsEnabledState(isGeofenceAdded);
         } catch (SecurityException securityException) {
             showToast(securityException.getMessage());
         }
     }
 
-    private PendingIntent getGeofencePendingIntent() {
+    public static PendingIntent getGeofencePendingIntent() {
         if (mGeofencePendingIntent != null) {
             return mGeofencePendingIntent;
         }
-        Intent intent = new Intent(this, GeofenceTransitionsIntentService.class);
-        return PendingIntent.getService(this, 0, intent, PendingIntent.
+        Intent intent = new Intent(mContext, GeofenceTransitionsIntentService.class);
+        return PendingIntent.getService(mContext, 0, intent, PendingIntent.
                 FLAG_UPDATE_CURRENT);
     }
 
-    private GeofencingRequest getGeofencingRequest() {
+    public static GeofencingRequest getGeofencingRequest() {
         GeofencingRequest.Builder builder = new GeofencingRequest.Builder();
         builder.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER);
         builder.addGeofences(mGeofenceList);
@@ -389,7 +415,7 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
 
     //BUTTON STATE
 
-    private void setButtonsEnabledState() {
+    public static void setButtonsEnabledState(boolean isGeofenceAdded) {
         if (isGeofenceAdded) {
             mAddGeofencesButton.setEnabled(false);
             mRemoveGeofenceButton.setEnabled(true);

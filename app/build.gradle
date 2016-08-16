@@ -8,7 +8,7 @@ android {
         applicationId "com.mobile.swollestandroid.noteifi"
         minSdkVersion 21
         targetSdkVersion 23
-        versionCode 1
+        versionCode 21
         versionName "1.0"
         multiDexEnabled true
     }

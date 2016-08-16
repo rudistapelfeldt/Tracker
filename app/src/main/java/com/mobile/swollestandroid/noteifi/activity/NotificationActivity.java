@@ -171,7 +171,7 @@ public class NotificationActivity extends AppCompatActivity implements View.OnCl
                 // Otherwise, set the URL to null.
                 Uri.parse("http://host/path"),
                 // TODO: Make sure this auto-generated app URL is correct.
-                Uri.parse("android-app://com.lavalamp.assessment.tracker_v11/http/host/path")
+                Uri.parse("android-app://com.mobile.swollestandroid.noteifi/http/host/path")
         );
         AppIndex.AppIndexApi.start(client, viewAction);
     }
@@ -190,7 +190,7 @@ public class NotificationActivity extends AppCompatActivity implements View.OnCl
                 // Otherwise, set the URL to null.
                 Uri.parse("http://host/path"),
                 // TODO: Make sure this auto-generated app URL is correct.
-                Uri.parse("android-app://com.lavalamp.assessment.tracker_v11/http/host/path")
+                Uri.parse("android-app://com.mobile.swollestandroid.noteifi/http/host/path")
         );
         AppIndex.AppIndexApi.end(client, viewAction);
         client.disconnect();
