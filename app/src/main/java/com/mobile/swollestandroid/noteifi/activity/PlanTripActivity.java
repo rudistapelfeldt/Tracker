@@ -1,6 +1,7 @@
 package com.mobile.swollestandroid.noteifi.activity;
 
 import android.app.DatePickerDialog;
+import android.app.FragmentManager;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.Intent;
@@ -36,6 +37,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.mobile.swollestandroid.noteifi.R;
 import com.mobile.swollestandroid.noteifi.asynktask.GetGoogleDirectionsTask;
+import com.mobile.swollestandroid.noteifi.fragment.RouteDetailFragment;
 import com.mobile.swollestandroid.noteifi.interfaces.AsyncGoogleDirectionResponse;
 import com.mobile.swollestandroid.noteifi.service.GeofenceTransitionsIntentService;
 import com.mobile.swollestandroid.noteifi.trip.parameters.Legs;
@@ -76,6 +78,7 @@ public class PlanTripActivity extends AppCompatActivity implements View.OnClickL
     private LatLng destination;
     private Button btnFindRoutes;
     private ProgressBar progressBar;
+    private Bundle args;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -176,21 +179,32 @@ public class PlanTripActivity extends AppCompatActivity implements View.OnClickL
                                         for (int n = 0; n < steps.size(); n++) {
 
                                             geofenceList.add(n, routes.get(l).getLegs().get(m).getSteps().get(n));
-                                            MapsActivity.getMap().addPolyline(new PolylineOptions().add(new LatLng(routes.get(l).getLegs().get(m).getSteps().get(n).getStartLocation().latitude, routes.get(l).getLegs().get(m).getSteps().get(n).getStartLocation().longitude))
+                                            /*MapsActivity.getMap().addPolyline(new PolylineOptions().add(new LatLng(routes.get(l).getLegs().get(m).getSteps().get(n).getStartLocation().latitude, routes.get(l).getLegs().get(m).getSteps().get(n).getStartLocation().longitude))
                                                     .add(new LatLng(routes.get(l).getLegs().get(m).getSteps().get(n).getEndLocation().latitude, routes.get(l).getLegs().get(m).getSteps().get(n).getEndLocation().longitude)).width(10)
-                                                    .color(color));
+                                                    .color(color));*/
                                             try {
                                                 MapsActivity.getMap().addCircle(new CircleOptions()
                                                         .center(new LatLng(routes.get(l).getLegs().get(m).getSteps().get(n).getStartLocation().latitude, routes.get(l).getLegs().get(m).getSteps().get(n).getStartLocation().longitude))
                                                         .radius(Constants.GEOFENCE_POINTS_RADIUS)
                                                         .strokeColor(Color.RED)
-                                                        .fillColor(Color.TRANSPARENT));
+                                                        .fillColor(Color.argb(100, 233, 195, 160)));
                                             } catch (SecurityException securityException) {
                                                 Log.e("JSONPARSELOG", securityException.getMessage());
                                             }
                                         }
                                     }
+                                    PolylineOptions options = new PolylineOptions().width(5).color(Color.BLUE).geodesic(true);
+                                    ArrayList<LatLng> polyList = responseHandler.getRoute().get(l).getListPoints();
+                                    for (int z = 0; z < polyList.size(); z++) {
+                                        LatLng point = polyList.get(z);
+                                        options.add(point);
+                                    }
+                                    MapsActivity.getMap().addPolyline(options);
+                                    args = new Bundle();
+                                    args.putSerializable("routeDetail", responseHandler.getRoute().get(l).getRouteDetails());
                                 }
+
+
                                 try {
 
                                     MapsActivity.populateStepsGeofenceList(Constants.GEOFENCE_POINTS_RADIUS, geofenceList);
@@ -205,6 +219,10 @@ public class PlanTripActivity extends AppCompatActivity implements View.OnClickL
                                     Log.e("JSONPARSERLOG", se.getMessage());
                                 }
                             }
+                            FragmentManager fragmentManager = getFragmentManager();
+                            RouteDetailFragment rf = new RouteDetailFragment();
+                            rf.setArguments(args);
+                            fragmentManager.beginTransaction().replace(R.id.content_plan_trip, rf).commit();
 
                         }
                     });
@@ -215,6 +233,7 @@ public class PlanTripActivity extends AppCompatActivity implements View.OnClickL
                 }else {
                     showToast("client not connected");
                 }
+                break;
         }
     }
 

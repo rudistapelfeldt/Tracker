@@ -11,6 +11,7 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.mobile.swollestandroid.noteifi.R;
+import com.mobile.swollestandroid.noteifi.util.RouteDetail;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -20,7 +21,7 @@ import com.mobile.swollestandroid.noteifi.R;
  * Use the {@link RouteDetailFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class RouteDetailFragment extends Fragment {
+public class RouteDetailFragment extends Fragment implements View.OnClickListener{
 
     EditText etSummary, etWarnings, etDuration, etDurationInTraffic;
     Button btnGotIt;
@@ -71,6 +72,9 @@ public class RouteDetailFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_route_detail, container, false);
+        //Bundle
+        Bundle args = getArguments();
+        RouteDetail routeDetail = (RouteDetail)args.getSerializable("routeDetail");
 
         //Edit Text
         etSummary = (EditText)rootView.findViewById(R.id.etSummary);
@@ -78,8 +82,16 @@ public class RouteDetailFragment extends Fragment {
         etDuration = (EditText)rootView.findViewById(R.id.etDuration);
         etDurationInTraffic = (EditText)rootView.findViewById(R.id.etDurationInTraffic);
 
+        //set editText
+        if (routeDetail != null) {
+            etSummary.setText(routeDetail.getSummary());
+            etWarnings.setText(routeDetail.getWarnings());
+            etDuration.setText(String.valueOf(routeDetail.getDurationTotal()));
+            etDurationInTraffic.setText(String.valueOf(routeDetail.getDurationInTrafficTotal()));
+        }
         //Button
         btnGotIt = (Button)rootView.findViewById(R.id.btnGotIt);
+        btnGotIt.setOnClickListener(this);
 
         return rootView;
     }
@@ -106,6 +118,17 @@ public class RouteDetailFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+    @Override
+    public void onClick(View v) {
+        int id = v.getId();
+
+        switch(id){
+            case R.id.btnGotIt:
+                getActivity().getFragmentManager().beginTransaction().remove(this).commit();
+                break;
+        }
     }
 
     /**
