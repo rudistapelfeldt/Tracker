@@ -9,8 +9,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.mobile.swollestandroid.noteifi.R;
+import com.mobile.swollestandroid.noteifi.activity.PlanTripActivity;
 import com.mobile.swollestandroid.noteifi.util.RouteDetail;
 
 /**
@@ -85,15 +87,36 @@ public class RouteDetailFragment extends Fragment implements View.OnClickListene
         //set editText
         if (routeDetail != null) {
             etSummary.setText(routeDetail.getSummary());
-            etWarnings.setText(routeDetail.getWarnings());
-            etDuration.setText(String.valueOf(routeDetail.getDurationTotal()));
-            etDurationInTraffic.setText(String.valueOf(routeDetail.getDurationInTrafficTotal()));
+            if (!routeDetail.getWarnings().equals("[]")) {
+                etWarnings.setText(routeDetail.getWarnings());
+            }else{
+                etWarnings.setText("");
+            }
+            if(routeDetail.getlDuration().size() > 0) {
+                etDuration.setText(getReadableDuration(routeDetail.getDurationTotal()));
+            }
+            if (routeDetail.getlDurationInTraffic().size() > 0) {
+                etDurationInTraffic.setText(getReadableDuration(routeDetail.getDurationInTrafficTotal()));
+            }
         }
         //Button
         btnGotIt = (Button)rootView.findViewById(R.id.btnGotIt);
         btnGotIt.setOnClickListener(this);
 
         return rootView;
+    }
+
+    private String getReadableDuration(long duration){
+
+        long longVal = duration;
+        int hours = (int) longVal / 3600;
+        int remainder = (int) longVal - hours * 3600;
+        int mins = remainder / 60;
+        remainder = remainder - mins * 60;
+        int secs = remainder;
+        String readableDuration = hours + " hours " + mins + " minutes " + secs + " seconds";
+        return readableDuration;
+
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -126,7 +149,10 @@ public class RouteDetailFragment extends Fragment implements View.OnClickListene
 
         switch(id){
             case R.id.btnGotIt:
+                getActivity().finish();
                 getActivity().getFragmentManager().beginTransaction().remove(this).commit();
+                Toast.makeText(getActivity(),"Check map for routes", Toast.LENGTH_LONG).show();
+
                 break;
         }
     }

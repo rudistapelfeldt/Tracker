@@ -5,6 +5,7 @@ import android.app.FragmentManager;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -61,7 +62,7 @@ import java.util.Random;
 import java.util.TimeZone;
 
 
-public class PlanTripActivity extends AppCompatActivity implements View.OnClickListener,GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks, AdapterView.OnItemSelectedListener, ResultCallback  {
+public class PlanTripActivity extends AppCompatActivity implements View.OnClickListener, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks, AdapterView.OnItemSelectedListener, ResultCallback {
     private ArrayAdapter<CharSequence> adapter;
     private ArrayList<Geofence> mGeofenceList;
     private Spinner spOrigin, spDestination, spMode;
@@ -84,22 +85,23 @@ public class PlanTripActivity extends AppCompatActivity implements View.OnClickL
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_plan_trip);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         //****spinner adapters****
         //origin and destination
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item,getList());
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, getList());
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         //mode
         ArrayAdapter<CharSequence> modeAdapter = ArrayAdapter.createFromResource(this,
                 R.array.mode_array, android.R.layout.simple_spinner_item);
         modeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         //progress bar
-        progressBar = (ProgressBar)findViewById(R.id.progressBar);
+        progressBar = (ProgressBar) findViewById(R.id.progressBar);
         mGeofencePendingIntent = null;
         buildGoogleApiClient();
         //spinners
-        spOrigin = (Spinner)findViewById(R.id.spinOrigin);
-        spDestination = (Spinner)findViewById(R.id.spinDestination);
-        spMode = (Spinner)findViewById(R.id.spinMode);
+        spOrigin = (Spinner) findViewById(R.id.spinOrigin);
+        spDestination = (Spinner) findViewById(R.id.spinDestination);
+        spMode = (Spinner) findViewById(R.id.spinMode);
         spOrigin.setAdapter(adapter);
         spDestination.setAdapter(adapter);
         spMode.setAdapter(modeAdapter);
@@ -108,11 +110,11 @@ public class PlanTripActivity extends AppCompatActivity implements View.OnClickL
         spMode.setOnItemSelectedListener(this);
 
         //edit text
-        etDepartureTime = (EditText)findViewById(R.id.etDepartureTime);
+        etDepartureTime = (EditText) findViewById(R.id.etDepartureTime);
         etDepartureTime.setOnClickListener(this);
 
         //button
-        btnFindRoutes = (Button)findViewById(R.id.btnGetRoutes);
+        btnFindRoutes = (Button) findViewById(R.id.btnGetRoutes);
         btnFindRoutes.setOnClickListener(this);
 
 
@@ -131,7 +133,7 @@ public class PlanTripActivity extends AppCompatActivity implements View.OnClickL
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()){
+        switch (v.getId()) {
             case R.id.etDepartureTime:
                 Calendar mCurrentDate = Calendar.getInstance();
                 Date now = new Date();
@@ -146,9 +148,9 @@ public class PlanTripActivity extends AppCompatActivity implements View.OnClickL
                 Log.i("DATECALLOG", mYear + "/" + mMonth + "/" + mDay);
                 final long dateNotTime = 31556926 * mYear + 2629743 + mMonth + 86400 * mDay;
                 TimePickerDialog mTimePicker;
-                mTimePicker = new TimePickerDialog(this, new TimePickerDialog.OnTimeSetListener(){
+                mTimePicker = new TimePickerDialog(this, new TimePickerDialog.OnTimeSetListener() {
                     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                        etDepartureTime.setText( String.valueOf(hourOfDay).concat(":").concat(String.valueOf(minute)).concat(":00"));
+                        etDepartureTime.setText(String.valueOf(hourOfDay).concat(":").concat(String.valueOf(minute)).concat(":00"));
                         long currentTime = (3600 * hourOfDay + 60 * minute) * 1000;
                         long now = System.currentTimeMillis() + currentTime;
 
@@ -165,13 +167,12 @@ public class PlanTripActivity extends AppCompatActivity implements View.OnClickL
                         @Override
                         public void processFinish(GoogleDirectionsResponseHandler responseHandler) {
                             if (responseHandler != null) {
-                                MapsActivity mapsActivity = new MapsActivity();
-                                showToast("Check map for routes");
+
                                 ArrayList<Route> routes = responseHandler.getRoute();
                                 ArrayList<Steps> geofenceList = new ArrayList<>();
                                 for (int l = 0; l < routes.size(); l++) {
                                     Random rnd = new Random();
-                                    final int color = Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
+                                    //final int color = Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
                                     Log.i("JSONPARSERLOG", "ROUTE NUMBER " + l);
                                     ArrayList<Legs> legs = routes.get(l).getLegs();
                                     for (int m = 0; m < legs.size(); m++) {
@@ -179,9 +180,7 @@ public class PlanTripActivity extends AppCompatActivity implements View.OnClickL
                                         for (int n = 0; n < steps.size(); n++) {
 
                                             geofenceList.add(n, routes.get(l).getLegs().get(m).getSteps().get(n));
-                                            /*MapsActivity.getMap().addPolyline(new PolylineOptions().add(new LatLng(routes.get(l).getLegs().get(m).getSteps().get(n).getStartLocation().latitude, routes.get(l).getLegs().get(m).getSteps().get(n).getStartLocation().longitude))
-                                                    .add(new LatLng(routes.get(l).getLegs().get(m).getSteps().get(n).getEndLocation().latitude, routes.get(l).getLegs().get(m).getSteps().get(n).getEndLocation().longitude)).width(10)
-                                                    .color(color));*/
+
                                             try {
                                                 MapsActivity.getMap().addCircle(new CircleOptions()
                                                         .center(new LatLng(routes.get(l).getLegs().get(m).getSteps().get(n).getStartLocation().latitude, routes.get(l).getLegs().get(m).getSteps().get(n).getStartLocation().longitude))
@@ -193,7 +192,7 @@ public class PlanTripActivity extends AppCompatActivity implements View.OnClickL
                                             }
                                         }
                                     }
-                                    PolylineOptions options = new PolylineOptions().width(5).color(Color.BLUE).geodesic(true);
+                                    PolylineOptions options = new PolylineOptions().width(10).color(Color.BLUE).geodesic(true);
                                     ArrayList<LatLng> polyList = responseHandler.getRoute().get(l).getListPoints();
                                     for (int z = 0; z < polyList.size(); z++) {
                                         LatLng point = polyList.get(z);
@@ -203,26 +202,30 @@ public class PlanTripActivity extends AppCompatActivity implements View.OnClickL
                                     args = new Bundle();
                                     args.putSerializable("routeDetail", responseHandler.getRoute().get(l).getRouteDetails());
                                 }
+                                if (!spOrigin.getSelectedItem().equals(spDestination.getSelectedItem())) {
+                                    FragmentManager fragmentManager = getFragmentManager();
+                                    RouteDetailFragment rf = new RouteDetailFragment();
+                                    rf.setArguments(args);
+                                    fragmentManager.beginTransaction().replace(R.id.content_plan_trip, rf).commit();
 
+                                    try {
 
-                                try {
-
-                                    MapsActivity.populateStepsGeofenceList(Constants.GEOFENCE_POINTS_RADIUS, geofenceList);
-                                    LocationServices.GeofencingApi.addGeofences(
-                                            MapsActivity.mGoogleApiClient,
-                                            MapsActivity.getGeofencingRequest(),
-                                            MapsActivity.getGeofencePendingIntent()
-                                    ).setResultCallback(PlanTripActivity.this);
-                                    isGeofenceAdded = true;
-                                    MapsActivity.setButtonsEnabledState(isGeofenceAdded);
-                                } catch (SecurityException se) {
-                                    Log.e("JSONPARSERLOG", se.getMessage());
+                                        MapsActivity.populateStepsGeofenceList(Constants.GEOFENCE_POINTS_RADIUS, geofenceList);
+                                        LocationServices.GeofencingApi.addGeofences(
+                                                MapsActivity.mGoogleApiClient,
+                                                MapsActivity.getGeofencingRequest(),
+                                                MapsActivity.getGeofencePendingIntent()
+                                        ).setResultCallback(PlanTripActivity.this);
+                                        isGeofenceAdded = true;
+                                        MapsActivity.setButtonsEnabledState(isGeofenceAdded);
+                                    } catch (SecurityException se) {
+                                        Log.e("JSONPARSERLOG", se.getMessage());
+                                    }
+                                } else {
+                                    showToast("Origin and destination cannot be the same");
                                 }
                             }
-                            FragmentManager fragmentManager = getFragmentManager();
-                            RouteDetailFragment rf = new RouteDetailFragment();
-                            rf.setArguments(args);
-                            fragmentManager.beginTransaction().replace(R.id.content_plan_trip, rf).commit();
+
 
                         }
                     });
@@ -230,7 +233,7 @@ public class PlanTripActivity extends AppCompatActivity implements View.OnClickL
                     Log.i("JSONPARSERLOG", "URL IS = " + getGoogleDirectionsUrl());
                     task.execute(getGoogleDirectionsUrl());
                     break;
-                }else {
+                } else {
                     showToast("client not connected");
                 }
                 break;
@@ -240,7 +243,7 @@ public class PlanTripActivity extends AppCompatActivity implements View.OnClickL
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         String input = parent.getItemAtPosition(position).toString();
-        switch(parent.getId()){
+        switch (parent.getId()) {
             case R.id.spinDestination:
                 Log.i("JSONPARSERLOG", "DESTINATION = " + parent.getItemAtPosition(position));
                 destination = geoMap.get(input);
@@ -250,7 +253,7 @@ public class PlanTripActivity extends AppCompatActivity implements View.OnClickL
                 origin = geoMap.get(input);
                 break;
             case R.id.spinMode:
-                mode = (String)parent.getItemAtPosition(position);
+                mode = (String) parent.getItemAtPosition(position);
                 Log.i("JSONPARSERLOG", "mode = " + parent.getItemAtPosition(position));
                 break;
         }
@@ -258,7 +261,7 @@ public class PlanTripActivity extends AppCompatActivity implements View.OnClickL
 
     @Override
     public void onNothingSelected(AdapterView<?> parent) {
-        switch(parent.getId()){
+        switch (parent.getId()) {
             case R.id.spinDestination:
                 showToast("Please select a destination");
                 break;
@@ -271,22 +274,22 @@ public class PlanTripActivity extends AppCompatActivity implements View.OnClickL
         }
     }
 
-    private String getGoogleDirectionsUrl(){
+    private String getGoogleDirectionsUrl() {
         if (origin != null && destination != null && mode != null && departureTime > 0) {
             String url = "https://maps.googleapis.com/maps/api/directions/json?origin=" + origin.latitude + "," + origin.longitude + "&destination="
                     + destination.latitude + "," + destination.longitude + "&mode=" + mode + "&departure_time=" + departureTime + "&key=" + Constants.GOOGLE_DIRECTIONS_SERVER_ID;
             return url;
-        }else if(origin != null && destination != null && mode == null && departureTime == 0){
+        } else if (origin != null && destination != null && mode == null && departureTime == 0) {
             String url = "https://maps.googleapis.com/maps/api/directions/json?origin=" + origin.latitude + "," + origin.longitude + "&destination="
                     + destination.latitude + "," + destination.longitude + "&key=" + Constants.GOOGLE_DIRECTIONS_SERVER_ID;
             return url;
 
-        }else if(origin != null && destination != null && mode != null && departureTime == 0){
+        } else if (origin != null && destination != null && mode != null && departureTime == 0) {
             String url = "https://maps.googleapis.com/maps/api/directions/json?origin=" + origin.latitude + "," + origin.longitude + "&destination="
                     + destination.latitude + "," + destination.longitude + "&mode=" + mode + "&key=" + Constants.GOOGLE_DIRECTIONS_SERVER_ID;
             return url;
 
-        }else if(origin != null && destination != null && mode == null && departureTime > 0) {
+        } else if (origin != null && destination != null && mode == null && departureTime > 0) {
             String url = "https://maps.googleapis.com/maps/api/directions/json?origin=" + origin.latitude + "," + origin.longitude + "&destination="
                     + destination.latitude + "," + destination.longitude + "&departure_time=" + departureTime + "&key=" + Constants.GOOGLE_DIRECTIONS_SERVER_ID;
             return url;
@@ -294,7 +297,7 @@ public class PlanTripActivity extends AppCompatActivity implements View.OnClickL
         return null;
     }
 
-    private void showToast(String message){
+    private void showToast(String message) {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show();
     }
 

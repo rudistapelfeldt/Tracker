@@ -3,6 +3,7 @@ package com.mobile.swollestandroid.noteifi.activity;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -35,6 +36,7 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         btnSaveRadius = (Button)findViewById(R.id.btnSaveRadius);
         btnPlaceFind = (Button)findViewById(R.id.btnPlaceFind);
         btnAddPlace = (Button)findViewById(R.id.btnAddPlaceGeofence);

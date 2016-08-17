@@ -33,14 +33,13 @@ public class GoogleResponseJSONParser {
             JSONArray mRoutes = response.getJSONArray("routes");
 
             for(int i = 0; i < mRoutes.length();i++){
-
+                handler.getRoute().add(i, new Route());
                 Log.i("JSONPARSERLOG", "Route number " + i);
                 JSONObject rs = mRoutes.getJSONObject(i);
                 //Get polyline
                 JSONObject overviewPolylines = rs.getJSONObject("overview_polyline");
                 String encodedString = overviewPolylines.getString("points");
                 handler.getRoute().get(i).setListPoints(decodePoly(encodedString));
-                handler.getRoute().add(i, new Route());
                 handler.getRoute().get(i).setSummary(rs.getString("summary"));
                 routeDetail.setSummary(rs.getString("summary"));
                 handler.getRoute().get(i).getCopyrights().add(rs.getString("copyrights"));
@@ -52,13 +51,19 @@ public class GoogleResponseJSONParser {
 
                     handler.getRoute().get(i).getLegs().add(j, new Legs());
 
-                    //duration in traffic
-                    JSONObject lDurationInTraffic = leg.getJSONObject("duration_in_traffic");
-                    routeDetail.getlDurationInTraffic().add(j, lDurationInTraffic.getLong("value"));
+                    if (leg.has("duration_in_traffic")) {
+                        //duration in traffic
+                        JSONObject lDurationInTraffic = leg.getJSONObject("duration_in_traffic");
 
+                        if (lDurationInTraffic != null) {
+                            routeDetail.getlDurationInTraffic().add(j, lDurationInTraffic.getLong("value"));
+                        }
+                    }
                     //duration
                     JSONObject lDuration = leg.getJSONObject("duration");
-                    routeDetail.getlDurationInTraffic().add(j, lDuration.getLong("value"));
+                    if (lDuration != null) {
+                        routeDetail.getlDuration().add(j, lDuration.getLong("value"));
+                    }
 
                     JSONArray step = leg.getJSONArray("steps");
                     for(int k = 0; k < step.length();k++){

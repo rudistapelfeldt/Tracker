@@ -7,9 +7,12 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Color;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
@@ -41,6 +44,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.Result;
 import com.google.android.gms.common.api.ResultCallback;
+
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationListener;
@@ -60,9 +64,12 @@ import com.mobile.swollestandroid.noteifi.util.Model;
 import com.mobile.swollestandroid.noteifi.adapter.MyAdapter;
 import com.mobile.swollestandroid.noteifi.R;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ListIterator;
+import java.util.Locale;
 import java.util.Map;
 
 import static com.mobile.swollestandroid.noteifi.R.layout.activity_maps2;
@@ -99,6 +106,7 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(activity_maps2);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         mContext = this;
         //SharedPreferences
         mode = Activity.MODE_PRIVATE;
@@ -279,20 +287,34 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
     public static void populateStepsGeofenceList(float radius, List<Steps> steps) {
         //Init Geofence list
         mGeofenceList = new ArrayList<Geofence>();
-        for(Steps s : steps){
-            double lat = s.getStartLocation().latitude;
-            double lng = s.getStartLocation().longitude;
-            mGeofenceList.add(new Geofence.Builder()
-                    .setRequestId(s.getStartLocation().toString())
-                    .setCircularRegion(
-                            lat,
-                            lng,
-                            radius
-                    )
-                    .setExpirationDuration(Constants.GEOFENCE_EXPIRATION_IN_MILLISECONDS)
-                    .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER |
-                            Geofence.GEOFENCE_TRANSITION_EXIT)
-                    .build());
+        double lat = 0.00;
+        double lng = 0.00;
+        Geocoder geocode = new Geocoder(mContext, Locale.getDefault());
+        for(int i = 0; i < steps.size(); i++){
+            if (i == (steps.size() - 1)){
+                lat = steps.get(i).getEndLocation().latitude;
+                lng = steps.get(i).getEndLocation().longitude;
+            }else {
+                lat = steps.get(i).getStartLocation().latitude;
+                lng = steps.get(i).getStartLocation().longitude;
+            }
+            try {
+                ListIterator<Address> iterator = geocode.getFromLocation(lat, lng, 1).listIterator();
+                String reqId = iterator.next().getAddressLine(0);
+                mGeofenceList.add(new Geofence.Builder()
+                        .setRequestId(reqId)
+                        .setCircularRegion(
+                                lat,
+                                lng,
+                                radius
+                        )
+                        .setExpirationDuration(Constants.GEOFENCE_EXPIRATION_IN_MILLISECONDS)
+                        .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER |
+                                Geofence.GEOFENCE_TRANSITION_EXIT)
+                        .build());
+            }catch(IOException ioex){
+                Log.e("MAPSACTIVITYLOG", ioex.getMessage());
+            }
         }
     }
 
@@ -337,7 +359,7 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
                                 .center(new LatLng(lat, lng))
                                 .radius(radius)
                                 .strokeColor(Color.RED)
-                                .fillColor(Color.BLUE));
+                                .fillColor(Color.argb(100, 233, 195, 160)));
                         isGeofenceAdded = true;
                         setButtonsEnabledState(isGeofenceAdded);
                     } catch (SecurityException securityException) {
