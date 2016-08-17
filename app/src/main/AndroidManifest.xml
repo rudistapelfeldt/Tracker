@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.mobile.swollestandroid.noteifi">
+    package="com.mobile.swollestandroid.noteifi" >
 
     <!--
          The ACCESS_COARSE/FINE_LOCATION permissions are not required to use
@@ -16,12 +16,12 @@
     <uses-permission android:name="android.permission.READ_CONTACTS" />
 
     <application
-        android:name="com.mobile.swollestandroid.noteifi.util.AppController"
+        android:name=".util.AppController"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme" >
 
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
@@ -35,12 +35,12 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
-        <service android:name="com.mobile.swollestandroid.noteifi.service.GeofenceTransitionsIntentService" />
+        <service android:name=".service.GeofenceTransitionsIntentService" />
 
         <activity
-            android:name="com.mobile.swollestandroid.noteifi.activity.MapsActivity"
+            android:name=".activity.MapsActivity"
             android:label="@string/title_activity_maps"
-            android:launchMode="singleTop">
+            android:launchMode="singleTop" >
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustPan"/>
             <intent-filter>
@@ -49,13 +49,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
-            android:name="com.mobile.swollestandroid.noteifi.activity.SettingsActivity"
+            android:name=".activity.SettingsActivity"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustPan" />
         <activity
-            android:name="com.mobile.swollestandroid.noteifi.activity.NotificationActivity"
+            android:name=".activity.NotificationActivity"
             android:label="@string/title_activity_notification"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustPan" />
@@ -68,7 +67,7 @@
             android:value="@integer/google_play_services_version" />
 
         <activity
-            android:name="com.mobile.swollestandroid.noteifi.activity.PlanTripActivity"
+            android:name=".activity.PlanTripActivity"
             android:label="@string/title_activity_plan_trip"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustPan" />
