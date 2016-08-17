@@ -12,6 +12,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.mobile.swollestandroid.noteifi.interfaces.AsyncGoogleDirectionResponse;
 import com.mobile.swollestandroid.noteifi.util.AppController;
 import com.mobile.swollestandroid.noteifi.util.GoogleDirectionsResponseHandler;
+import com.mobile.swollestandroid.noteifi.util.GoogleResponseJSONParser;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -26,7 +27,7 @@ public class GetGoogleDirectionsTask extends AsyncTask<String, Integer, GoogleDi
 
     //private ArrayList<Model> itemArray = new ArrayList<>();
     public AsyncGoogleDirectionResponse delegate = null;
-    //private ProgressBar progressBar;
+    private ProgressBar progressBar;
 
     public GetGoogleDirectionsTask(AsyncGoogleDirectionResponse response)
     {
@@ -34,23 +35,23 @@ public class GetGoogleDirectionsTask extends AsyncTask<String, Integer, GoogleDi
         delegate = response;
     }
 
-    //public void setProgressBar(ProgressBar bar) {
-    //    this.progressBar = bar;
-    //}
+    public void setProgressBar(ProgressBar bar) {
+        this.progressBar = bar;
+    }
 
     @Override
     protected void onProgressUpdate(Integer... values) {
         super.onProgressUpdate(values);
-        //if (this.progressBar != null) {
-         //   progressBar.setProgress(values[0]);
-        //}
+        if (this.progressBar != null) {
+            progressBar.setProgress(values[0]);
+        }
     }
 
     @Override
     protected void onPostExecute(GoogleDirectionsResponseHandler model) {
         super.onPostExecute(model);
         delegate.processFinish(model);
-        //progressBar.setVisibility(View.GONE);
+        progressBar.setVisibility(View.GONE);
     }
 
     @Override
@@ -61,8 +62,9 @@ public class GetGoogleDirectionsTask extends AsyncTask<String, Integer, GoogleDi
                     @Override
                     public void onResponse(JSONObject response) {
                         Log.i("NOTEIFILOG", "response = " + response);
-                        //GoogleDirectionsResponseHandler googleDirectionsResponseHandler = new GoogleDirectionsResponseHandler();
-                        //GetGoogleDirectionsTask.this.onPostExecute(googleDirectionsResponseHandler);
+                        GoogleResponseJSONParser jsonParser = new GoogleResponseJSONParser();
+                        GoogleDirectionsResponseHandler handler = jsonParser.parse(response);
+                        GetGoogleDirectionsTask.this.onPostExecute(handler);
                     }
                 }, new Response.ErrorListener() {
                     @Override

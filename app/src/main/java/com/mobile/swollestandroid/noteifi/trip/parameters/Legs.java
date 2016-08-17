@@ -9,11 +9,11 @@ import java.util.ArrayList;
  */
 public class Legs {
 
-    private ArrayList<Steps> steps;
-    private ArrayList<String> distance;
-    private ArrayList<String> duration;
-    private ArrayList<String> durationInTraffic;
-    private ArrayList<String> arrivalTime;
+    private ArrayList<Steps> steps = new ArrayList<>();
+    private ArrayList<String> distance = new ArrayList<>();
+    private ArrayList<String> duration = new ArrayList<>();
+    private ArrayList<String> durationInTraffic = new ArrayList<>();
+    private ArrayList<String> arrivalTime = new ArrayList<>();
 
     public ArrayList<Steps> getSteps() {
         return steps;

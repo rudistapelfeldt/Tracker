@@ -7,9 +7,12 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Color;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
@@ -41,6 +44,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.Result;
 import com.google.android.gms.common.api.ResultCallback;
+
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationListener;
@@ -52,6 +56,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
+import com.mobile.swollestandroid.noteifi.trip.parameters.Steps;
 import com.mobile.swollestandroid.noteifi.util.Constants;
 import com.mobile.swollestandroid.noteifi.util.DatabaseHelper;
 import com.mobile.swollestandroid.noteifi.service.GeofenceTransitionsIntentService;
@@ -59,23 +64,27 @@ import com.mobile.swollestandroid.noteifi.util.Model;
 import com.mobile.swollestandroid.noteifi.adapter.MyAdapter;
 import com.mobile.swollestandroid.noteifi.R;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ListIterator;
+import java.util.Locale;
 import java.util.Map;
 
 import static com.mobile.swollestandroid.noteifi.R.layout.activity_maps2;
 
 public class MapsActivity extends FragmentActivity implements ListView.OnItemClickListener, LocationListener, OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, ResultCallback {
 
-    private GoogleMap mMap;
+    private static GoogleMap mMap;
     private LocationManager locationManager;
-    private PendingIntent mGeofencePendingIntent;
-    protected ArrayList<Geofence> mGeofenceList;
-    private Button mAddGeofencesButton, mRemoveGeofenceButton;
-    protected GoogleApiClient mGoogleApiClient;
+    private static PendingIntent mGeofencePendingIntent;
+    protected static ArrayList<Geofence> mGeofenceList;
+    private static Button mAddGeofencesButton, mRemoveGeofenceButton;
+    public static GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
     private boolean isGeofenceAdded = false;
+    private static Context mContext;
     private SharedPreferences sharedPreferences;
     private int mode;
     private DatabaseHelper databaseHelper;
@@ -90,13 +99,15 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
      */
-    private GoogleApiClient client;
+    public static GoogleApiClient client;
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(activity_maps2);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        mContext = this;
         //SharedPreferences
         mode = Activity.MODE_PRIVATE;
         sharedPreferences = getSharedPreferences(Constants.MY_PREFS, mode);
@@ -273,6 +284,40 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
         }
     }
 
+    public static void populateStepsGeofenceList(float radius, List<Steps> steps) {
+        //Init Geofence list
+        mGeofenceList = new ArrayList<Geofence>();
+        double lat = 0.00;
+        double lng = 0.00;
+        Geocoder geocode = new Geocoder(mContext, Locale.getDefault());
+        for(int i = 0; i < steps.size(); i++){
+            if (i == (steps.size() - 1)){
+                lat = steps.get(i).getEndLocation().latitude;
+                lng = steps.get(i).getEndLocation().longitude;
+            }else if (i < (steps.size() - 1)){
+                lat = steps.get(i).getStartLocation().latitude;
+                lng = steps.get(i).getStartLocation().longitude;
+            }
+            try {
+                ListIterator<Address> iterator = geocode.getFromLocation(lat, lng, 1).listIterator();
+                String reqId = iterator.next().getAddressLine(0);
+                mGeofenceList.add(new Geofence.Builder()
+                        .setRequestId(reqId)
+                        .setCircularRegion(
+                                lat,
+                                lng,
+                                radius
+                        )
+                        .setExpirationDuration(Constants.GEOFENCE_EXPIRATION_IN_MILLISECONDS)
+                        .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER |
+                                Geofence.GEOFENCE_TRANSITION_EXIT)
+                        .build());
+            }catch(IOException ioex){
+                Log.e("MAPSACTIVITYLOG", ioex.getMessage());
+            }
+        }
+    }
+
     //Add Geofence method
 
     public void addGeofencesButtonHandler(View view) {
@@ -314,9 +359,9 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
                                 .center(new LatLng(lat, lng))
                                 .radius(radius)
                                 .strokeColor(Color.RED)
-                                .fillColor(Color.BLUE));
+                                .fillColor(Color.argb(100, 233, 195, 160)));
                         isGeofenceAdded = true;
-                        setButtonsEnabledState();
+                        setButtonsEnabledState(isGeofenceAdded);
                     } catch (SecurityException securityException) {
                         showToast(securityException.getMessage());
                     }
@@ -325,6 +370,9 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
         }
     }
 
+    public static GoogleMap getMap(){
+        return mMap;
+    }
     //Remove Geofence Method
 
     public void removeGeofencesButtonHandler(View view) {
@@ -340,23 +388,23 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
             mMap.clear();
             isGeofenceAdded = false;
             batchPickUnselectAll();
-            postAdapter.notifyDataSetChanged();
-            setButtonsEnabledState();
+            //postAdapter.notifyDataSetChanged();
+            setButtonsEnabledState(isGeofenceAdded);
         } catch (SecurityException securityException) {
             showToast(securityException.getMessage());
         }
     }
 
-    private PendingIntent getGeofencePendingIntent() {
+    public static PendingIntent getGeofencePendingIntent() {
         if (mGeofencePendingIntent != null) {
             return mGeofencePendingIntent;
         }
-        Intent intent = new Intent(this, GeofenceTransitionsIntentService.class);
-        return PendingIntent.getService(this, 0, intent, PendingIntent.
+        Intent intent = new Intent(mContext, GeofenceTransitionsIntentService.class);
+        return PendingIntent.getService(mContext, 0, intent, PendingIntent.
                 FLAG_UPDATE_CURRENT);
     }
 
-    private GeofencingRequest getGeofencingRequest() {
+    public static GeofencingRequest getGeofencingRequest() {
         GeofencingRequest.Builder builder = new GeofencingRequest.Builder();
         builder.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER);
         builder.addGeofences(mGeofenceList);
@@ -389,7 +437,7 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
 
     //BUTTON STATE
 
-    private void setButtonsEnabledState() {
+    public static void setButtonsEnabledState(boolean isGeofenceAdded) {
         if (isGeofenceAdded) {
             mAddGeofencesButton.setEnabled(false);
             mRemoveGeofenceButton.setEnabled(true);

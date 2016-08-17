@@ -8,7 +8,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    android:background="?attr/colorPrimary"
+    android:background="@drawable/layout_bg_blue"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="com.mobile.swollestandroid.noteifi.activity.NotificationActivity"
     tools:showIn="@layout/activity_notification">
@@ -19,7 +19,7 @@
         android:layout_height="35dp"
         android:id="@+id/contactsListView"
         android:choiceMode="multipleChoice"
-        android:background="@drawable/listview"
+        android:background="@drawable/map_bg"
         android:layout_alignParentTop="true"
         android:layout_alignParentStart="true"
         android:layout_marginTop="47dp" />
@@ -47,7 +47,6 @@
         android:inputType="none"
         android:layout_below="@+id/contactsListView"
         android:layout_alignParentStart="true"
-        android:textSize="@dimen/recipients_text_size"
         android:layout_marginTop="59dp"/>
 
     <Button

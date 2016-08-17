@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.location.Geocoder;
 import android.telephony.SmsManager;
 import android.text.TextUtils;
 import android.util.Log;
@@ -23,6 +24,7 @@ import com.mobile.swollestandroid.noteifi.R;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 /**
@@ -67,6 +69,7 @@ public class GeofenceTransitionsIntentService extends IntentService {
                 //geofenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT) {
             switch (geofenceTransition) {
                 case Geofence.GEOFENCE_TRANSITION_ENTER:
+                    Log.i(TAG, "GEO ENTERED");
                     transition();
                     break;
                 case Geofence.GEOFENCE_TRANSITION_EXIT:
@@ -126,10 +129,13 @@ public class GeofenceTransitionsIntentService extends IntentService {
 
         notificationManager.notify(0, builder);
         Set<String> numbers = sharedPreferences.getStringSet("Recipients", null);
-        for (String number : numbers) {
-            SmsManager sms = SmsManager.getDefault();
-            String strMessage = notificationDetails + ". Location = " + lat + " , " + lng;
-            sms.sendTextMessage(number, null, strMessage, null, null);
+        if(numbers != null) {
+            Geocoder coder = new Geocoder(getApplicationContext(), Locale.getDefault());
+            for (String number : numbers) {
+                SmsManager sms = SmsManager.getDefault();
+                String strMessage = notificationDetails + ". Location = " + lat + " , " + lng;
+                sms.sendTextMessage(number, null, strMessage, null, null);
+            }
         }
     }
 

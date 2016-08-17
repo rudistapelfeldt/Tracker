@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -14,49 +13,10 @@
     <TextView
         android:layout_width="300dp"
         android:layout_height="wrap_content"
-        android:text="@string/enter_number"
-        android:id="@+id/tvNumber"
-        android:textColor="@color/white"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true" />
-
-    <EditText
-        android:layout_width="300dp"
-        android:layout_height="wrap_content"
-        android:id="@+id/etNumber"
-        android:background="@drawable/edit_button_bg"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp"
-        android:singleLine="true"
-        android:maxLength="13"
-        android:layout_below="@+id/tvNumber"
-        android:inputType="phone"
-        android:layout_alignParentStart="true"
-        android:visibility="invisible" />
-
-    <View style="@style/Divider"
-        android:layout_below="@+id/btnSaveNumber"
-        android:layout_alignParentStart="true"
-        android:id="@+id/view" />
-
-    <Button
-        style="?android:attr/buttonStyleSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="SAVE"
-        android:id="@+id/btnSaveNumber"
-        android:layout_below="@+id/etNumber"
-        android:layout_alignParentStart="true" />
-
-    <TextView
-        android:layout_width="300dp"
-        android:layout_height="wrap_content"
         android:text="@string/enter_radius"
         android:id="@+id/tvRadius"
         android:textColor="@color/white"
-        android:layout_below="@+id/view"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="32dp" />
+        android:layout_alignParentStart="true" />
 
     <EditText
         android:layout_width="300dp"
@@ -67,7 +27,6 @@
         android:paddingRight="10dp"
         android:maxLength="13"
         android:singleLine="true"
-        android:inputType="numberDecimal"
         android:layout_below="@+id/tvRadius"
         android:layout_alignParentStart="true" />
 
@@ -90,16 +49,16 @@
         android:layout_height="wrap_content"
         android:text="Add A Location"
         android:id="@+id/tvAddGeofence"
-        android:layout_below="@+id/view2"
+        android:textColor="@color/white"
+        android:layout_below="@+id/btnSaveRadius"
         android:layout_alignParentStart="true"
-        android:layout_marginTop="34dp"
-        android:textColor="@color/white"/>
+        android:layout_marginTop="32dp" />
 
     <Button
         style="?android:attr/buttonStyleSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Find A Place"
+        android:text="Find A Location"
         android:id="@+id/btnPlaceFind"
         android:layout_below="@+id/tvAddGeofence"
         android:layout_alignParentStart="true" />
@@ -111,13 +70,12 @@
         android:background="@drawable/edit_button_bg"
         android:paddingLeft="10dp"
         android:paddingRight="10dp"
-        android:layout_marginTop="10dp"
         android:maxLength="30"
         android:singleLine="true"
-        android:layout_below="@+id/btnPlaceFind"
-        android:layout_alignParentStart="true"
         android:editable="false"
-        android:visibility="invisible" />
+        android:visibility="invisible"
+        android:layout_alignTop="@+id/view2"
+        android:layout_alignParentStart="true" />
 
     <Button
         style="?android:attr/buttonStyleSmall"
@@ -125,20 +83,9 @@
         android:layout_height="wrap_content"
         android:text="Add To Geofence List"
         android:id="@+id/btnAddPlaceGeofence"
-        android:layout_marginTop="82dp"
         android:visibility="invisible"
         android:layout_below="@+id/etPlaceName"
-        android:layout_alignParentStart="true" />
-
-    <ListView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/contactsListView"
-        android:layout_alignParentTop="true"
-        android:layout_toEndOf="@+id/btnAddPlaceGeofence"
-        android:layout_marginStart="57dp"
-        android:layout_above="@+id/btnSaveNumber"
-        android:choiceMode="multipleChoice"
-        android:background="@drawable/listview"/>
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="41dp" />
 
 </RelativeLayout>

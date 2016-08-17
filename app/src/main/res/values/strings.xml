@@ -30,7 +30,7 @@
     <string name="content_plan_trip_text_view_mode">Mode Of Transport</string>
     <string name="content_plan_trip_text_view_departure_time">Departure Time</string>
     <string name="content_plan_trip_edit_text_departure_time_hint">Select Departure Time</string>
-    <string name="content_plan_trip_button_find_routes">Find Routes</string>
+    <string name="content_plan_trip_button_find_routes">Find Route</string>
     <string-array name="mode_array">
         <item>driving</item>
         <item>walking</item>
@@ -38,6 +38,18 @@
         <item>transit</item>
     </string-array>
     <string name="title_activity_maps2">Map</string>
-    <string name="add_geofences">Add Geofences</string>
-    <string name="remove_geofence">REMOVE GEOFENCE</string>
+    <string name="add_geofences">ADD</string>
+    <string name="remove_geofence">REMOVE</string>
+
+    <!-- route detail fragment strings -->
+    <string name="route_detail_text_view_header">ROUTE DETAIL</string>
+    <string name="route_detail_text_view_summary">Summary</string>
+    <string name="route_detail_text_view_warnings">Warnings</string>
+    <string name="route_detail_text_view_duration">Duration</string>
+    <string name="route_detail_text_view_duration_in_traffic">Duration in traffic</string>
+    <string name="route_detail_button_text">GOT IT</string>
+
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

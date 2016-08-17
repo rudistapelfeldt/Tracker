@@ -7,7 +7,7 @@ import java.util.ArrayList;
  */
 public class Waypoints {
 
-    private ArrayList<String> placeID;
+    private ArrayList<String> placeID = new ArrayList<>();
 
     public ArrayList<String> getPlaceID() {
         return placeID;
