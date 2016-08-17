@@ -19,6 +19,7 @@
         android:layout_height="match_parent"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
+        android:background="@drawable/sub_layout_bg"
         android:weightSum="1"
         android:id="@+id/linearLayout">
         <ProgressBar
