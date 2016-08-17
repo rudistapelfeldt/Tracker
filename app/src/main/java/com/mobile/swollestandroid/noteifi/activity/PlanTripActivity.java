@@ -180,15 +180,26 @@ public class PlanTripActivity extends AppCompatActivity implements View.OnClickL
                                         for (int n = 0; n < steps.size(); n++) {
 
                                             geofenceList.add(n, routes.get(l).getLegs().get(m).getSteps().get(n));
-
-                                            try {
-                                                MapsActivity.getMap().addCircle(new CircleOptions()
-                                                        .center(new LatLng(routes.get(l).getLegs().get(m).getSteps().get(n).getStartLocation().latitude, routes.get(l).getLegs().get(m).getSteps().get(n).getStartLocation().longitude))
-                                                        .radius(Constants.GEOFENCE_POINTS_RADIUS)
-                                                        .strokeColor(Color.RED)
-                                                        .fillColor(Color.argb(100, 233, 195, 160)));
-                                            } catch (SecurityException securityException) {
-                                                Log.e("JSONPARSELOG", securityException.getMessage());
+                                            if (n != steps.size() - 1) {
+                                                try {
+                                                    MapsActivity.getMap().addCircle(new CircleOptions()
+                                                            .center(new LatLng(routes.get(l).getLegs().get(m).getSteps().get(n).getStartLocation().latitude, routes.get(l).getLegs().get(m).getSteps().get(n).getStartLocation().longitude))
+                                                            .radius(Constants.GEOFENCE_POINTS_RADIUS)
+                                                            .strokeColor(Color.RED)
+                                                            .fillColor(Color.argb(100, 233, 195, 160)));
+                                                } catch (SecurityException securityException) {
+                                                    Log.e("JSONPARSELOG", securityException.getMessage());
+                                                }
+                                            }else {
+                                                try {
+                                                    MapsActivity.getMap().addCircle(new CircleOptions()
+                                                            .center(new LatLng(routes.get(l).getLegs().get(m).getSteps().get(n).getEndLocation().latitude, routes.get(l).getLegs().get(m).getSteps().get(n).getEndLocation().longitude))
+                                                            .radius(Constants.GEOFENCE_POINTS_RADIUS)
+                                                            .strokeColor(Color.RED)
+                                                            .fillColor(Color.argb(100, 233, 195, 160)));
+                                                } catch (SecurityException securityException) {
+                                                    Log.e("JSONPARSELOG", securityException.getMessage());
+                                                }
                                             }
                                         }
                                     }

@@ -294,7 +294,7 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
             if (i == (steps.size() - 1)){
                 lat = steps.get(i).getEndLocation().latitude;
                 lng = steps.get(i).getEndLocation().longitude;
-            }else {
+            }else if (i < (steps.size() - 1)){
                 lat = steps.get(i).getStartLocation().latitude;
                 lng = steps.get(i).getStartLocation().longitude;
             }
