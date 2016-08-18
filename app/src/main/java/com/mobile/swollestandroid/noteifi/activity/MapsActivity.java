@@ -95,6 +95,7 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
     private HeaderViewListAdapter hlva;
     private MyAdapter postAdapter;
     private String TAG = "MapsActivity";
+    private SharedPreferences.Editor editor;
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -111,6 +112,8 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
         //SharedPreferences
         mode = Activity.MODE_PRIVATE;
         sharedPreferences = getSharedPreferences(Constants.MY_PREFS, mode);
+        editor = sharedPreferences.edit();
+
         // Set buttons
         mAddGeofencesButton = (Button) findViewById(R.id.btnAddGeofence);
         mRemoveGeofenceButton = (Button) findViewById(R.id.btnRemoveGeofence);
@@ -388,7 +391,8 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
             mMap.clear();
             isGeofenceAdded = false;
             batchPickUnselectAll();
-            //postAdapter.notifyDataSetChanged();
+            editor.remove("Recipients");
+            editor.commit();
             setButtonsEnabledState(isGeofenceAdded);
         } catch (SecurityException securityException) {
             showToast(securityException.getMessage());

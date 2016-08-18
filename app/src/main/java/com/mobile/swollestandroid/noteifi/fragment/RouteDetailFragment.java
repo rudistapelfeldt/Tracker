@@ -1,9 +1,13 @@
 package com.mobile.swollestandroid.noteifi.fragment;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.location.Geocoder;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.telephony.SmsManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,7 +17,11 @@ import android.widget.Toast;
 
 import com.mobile.swollestandroid.noteifi.R;
 import com.mobile.swollestandroid.noteifi.activity.PlanTripActivity;
+import com.mobile.swollestandroid.noteifi.util.Constants;
 import com.mobile.swollestandroid.noteifi.util.RouteDetail;
+
+import java.util.Locale;
+import java.util.Set;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -25,8 +33,11 @@ import com.mobile.swollestandroid.noteifi.util.RouteDetail;
  */
 public class RouteDetailFragment extends Fragment implements View.OnClickListener{
 
+    SharedPreferences sharedPreferences;
+    private int mode;
     EditText etSummary, etWarnings, etDuration, etDurationInTraffic;
     Button btnGotIt;
+    RouteDetail routeDetail;
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -74,9 +85,11 @@ public class RouteDetailFragment extends Fragment implements View.OnClickListene
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_route_detail, container, false);
+        sharedPreferences = getActivity().getSharedPreferences(Constants.MY_PREFS, mode);
+        mode = Activity.MODE_PRIVATE;
         //Bundle
         Bundle args = getArguments();
-        RouteDetail routeDetail = (RouteDetail)args.getSerializable("routeDetail");
+        routeDetail = (RouteDetail)args.getSerializable("routeDetail");
 
         //Edit Text
         etSummary = (EditText)rootView.findViewById(R.id.etSummary);
@@ -149,11 +162,23 @@ public class RouteDetailFragment extends Fragment implements View.OnClickListene
 
         switch(id){
             case R.id.btnGotIt:
+                PlanTripActivity planTrip = new PlanTripActivity();
                 getActivity().finish();
                 getActivity().getFragmentManager().beginTransaction().remove(this).commit();
-                Toast.makeText(getActivity(),"Check map for routes", Toast.LENGTH_LONG).show();
-
+                sendTripNotification();
                 break;
+        }
+    }
+
+    private void sendTripNotification(){
+        Set<String> numbers = sharedPreferences.getStringSet("Recipients", null);
+        if(numbers != null) {
+            for (String number : numbers) {
+                SmsManager sms = SmsManager.getDefault();
+                String strMessage = "Hi. I am leaving " + routeDetail.getOrigin() + ", and traveling to " + routeDetail.getDestination() + ". I should be at "
+                        + routeDetail.getDestination() + " in " + etDurationInTraffic.getText() + ".";
+                sms.sendTextMessage(number, null, strMessage, null, null);
+            }
         }
     }
 

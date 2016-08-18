@@ -7,13 +7,30 @@ import java.util.ArrayList;
  * Created by Rudi on 8/17/2016.
  */
 public class RouteDetail implements Serializable{
-
+    private String origin;
+    private String destination;
     private String summary;
     private String warnings;
     private ArrayList<String> duration = new ArrayList<>();
     private ArrayList<Long> lDuration = new ArrayList<>();
     private ArrayList<String> durationInTraffic = new ArrayList<>();
     private ArrayList<Long> lDurationInTraffic = new ArrayList<>();
+
+    public String getOrigin() {
+        return origin;
+    }
+
+    public void setOrigin(String origin) {
+        this.origin = origin;
+    }
+
+    public String getDestination() {
+        return destination;
+    }
+
+    public void setDestination(String destination) {
+        this.destination = destination;
+    }
 
     public String getSummary() {
         return summary;

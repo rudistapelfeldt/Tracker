@@ -177,6 +177,8 @@ public class PlanTripActivity extends AppCompatActivity implements View.OnClickL
                                     ArrayList<Legs> legs = routes.get(l).getLegs();
                                     for (int m = 0; m < legs.size(); m++) {
                                         ArrayList<Steps> steps = routes.get(l).getLegs().get(m).getSteps();
+                                        responseHandler.getRoute().get(m).getRouteDetails().setOrigin(spOrigin.getSelectedItem().toString());
+                                        responseHandler.getRoute().get(m).getRouteDetails().setDestination(spDestination.getSelectedItem().toString());
                                         for (int n = 0; n < steps.size(); n++) {
 
                                             geofenceList.add(n, routes.get(l).getLegs().get(m).getSteps().get(n));

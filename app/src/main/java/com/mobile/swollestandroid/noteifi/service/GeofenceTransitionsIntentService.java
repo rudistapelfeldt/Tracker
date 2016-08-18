@@ -68,6 +68,9 @@ public class GeofenceTransitionsIntentService extends IntentService {
         //if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER ||
                 //geofenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT) {
             switch (geofenceTransition) {
+                case Geofence.GEOFENCE_TRANSITION_DWELL:
+                    transition();
+                    break;
                 case Geofence.GEOFENCE_TRANSITION_ENTER:
                     Log.i(TAG, "GEO ENTERED");
                     transition();
@@ -147,6 +150,8 @@ public class GeofenceTransitionsIntentService extends IntentService {
      */
     private String getTransitionString(int transitionType) {
         switch (transitionType) {
+            case Geofence.GEOFENCE_TRANSITION_DWELL:
+                return getString(R.string.geofence_transition_dwell);
             case Geofence.GEOFENCE_TRANSITION_ENTER:
 
                 return getString(R.string.geofence_transition_entered);
