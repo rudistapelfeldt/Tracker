@@ -34,6 +34,7 @@ public class GoogleResponseJSONParser {
 
             for(int i = 0; i < mRoutes.length();i++){
                 handler.getRoute().add(i, new Route());
+                routeDetail.setId(i);
                 Log.i("JSONPARSERLOG", "Route number " + i);
                 JSONObject rs = mRoutes.getJSONObject(i);
                 //Get polyline
@@ -127,22 +128,3 @@ public class GoogleResponseJSONParser {
         return poly;
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

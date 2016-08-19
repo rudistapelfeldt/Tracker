@@ -7,6 +7,7 @@ import java.util.ArrayList;
  * Created by Rudi on 8/17/2016.
  */
 public class RouteDetail implements Serializable{
+    private int id;
     private String origin;
     private String destination;
     private String summary;
@@ -15,6 +16,14 @@ public class RouteDetail implements Serializable{
     private ArrayList<Long> lDuration = new ArrayList<>();
     private ArrayList<String> durationInTraffic = new ArrayList<>();
     private ArrayList<Long> lDurationInTraffic = new ArrayList<>();
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 
     public String getOrigin() {
         return origin;

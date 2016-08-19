@@ -35,6 +35,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.HeaderViewListAdapter;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 import android.widget.Toolbar;
 
@@ -96,6 +97,8 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
     private MyAdapter postAdapter;
     private String TAG = "MapsActivity";
     private SharedPreferences.Editor editor;
+    private static ProgressBar mapsProgressbar;
+
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -108,6 +111,8 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
         super.onCreate(savedInstanceState);
         setContentView(activity_maps2);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        //progress bar
+        mapsProgressbar = (ProgressBar)findViewById(R.id.map_progressBar);
         mContext = this;
         //SharedPreferences
         mode = Activity.MODE_PRIVATE;
@@ -128,6 +133,7 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
         if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             showSettingsAlert();
         }
+
         databaseHelper = new DatabaseHelper(this);
         geoMap = Constants.getGeoMap();
         geofenceListView = (ListView) findViewById(R.id.lvChooseGeofence);
@@ -538,6 +544,10 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
         );
         AppIndex.AppIndexApi.end(client, viewAction);
         client.disconnect();*/
+    }
+
+    public static ProgressBar getMapsProgressbar(){
+        return mapsProgressbar;
     }
 }
 

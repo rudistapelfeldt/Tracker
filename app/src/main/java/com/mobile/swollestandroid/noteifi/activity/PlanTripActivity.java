@@ -1,5 +1,6 @@
 package com.mobile.swollestandroid.noteifi.activity;
 
+import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.FragmentManager;
 import android.app.PendingIntent;
@@ -7,6 +8,7 @@ import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Color;
+import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -16,6 +18,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -33,8 +36,11 @@ import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.mobile.swollestandroid.noteifi.R;
 import com.mobile.swollestandroid.noteifi.asynktask.GetGoogleDirectionsTask;
@@ -56,9 +62,11 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.TimeZone;
 
 
@@ -79,13 +87,19 @@ public class PlanTripActivity extends AppCompatActivity implements View.OnClickL
     private LatLng destination;
     private Button btnFindRoutes;
     private ProgressBar progressBar;
+    private MapsActivity mapsActivity;
+
+
     private Bundle args;
+    private Map<Route,Polyline> polylines = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_plan_trip);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        //instance of MapsActivity
+        mapsActivity = new MapsActivity();
         //****spinner adapters****
         //origin and destination
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, getList());
@@ -151,11 +165,10 @@ public class PlanTripActivity extends AppCompatActivity implements View.OnClickL
                 mTimePicker = new TimePickerDialog(this, new TimePickerDialog.OnTimeSetListener() {
                     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
                         etDepartureTime.setText(String.valueOf(hourOfDay).concat(":").concat(String.valueOf(minute)).concat(":00"));
+                        hideSoftKeyboard(PlanTripActivity.this);
                         long currentTime = (3600 * hourOfDay + 60 * minute) * 1000;
                         long now = System.currentTimeMillis() + currentTime;
-
                         departureTime = now / 1000;
-                        Log.i("DATECALLOG", "TIME IN SECONDS = " + departureTime);
                     }
                 }, mHour, mMinute, true);
                 mTimePicker.setTitle("Select Time");
@@ -163,79 +176,109 @@ public class PlanTripActivity extends AppCompatActivity implements View.OnClickL
                 break;
             case R.id.btnGetRoutes:
                 if (mGoogleApiClient.isConnected()) {
+                    progressBar.setVisibility(View.VISIBLE);
                     GetGoogleDirectionsTask task = new GetGoogleDirectionsTask(new AsyncGoogleDirectionResponse() {
                         @Override
-                        public void processFinish(GoogleDirectionsResponseHandler responseHandler) {
+                        public void processFinish(final GoogleDirectionsResponseHandler responseHandler) {
                             if (responseHandler != null) {
 
                                 ArrayList<Route> routes = responseHandler.getRoute();
-                                ArrayList<Steps> geofenceList = new ArrayList<>();
+                                final ArrayList<Steps> geofenceList = new ArrayList<>();
                                 for (int l = 0; l < routes.size(); l++) {
                                     Random rnd = new Random();
-                                    //final int color = Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
+                                    final int color = Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
                                     Log.i("JSONPARSERLOG", "ROUTE NUMBER " + l);
                                     ArrayList<Legs> legs = routes.get(l).getLegs();
                                     for (int m = 0; m < legs.size(); m++) {
-                                        ArrayList<Steps> steps = routes.get(l).getLegs().get(m).getSteps();
+
                                         responseHandler.getRoute().get(m).getRouteDetails().setOrigin(spOrigin.getSelectedItem().toString());
                                         responseHandler.getRoute().get(m).getRouteDetails().setDestination(spDestination.getSelectedItem().toString());
-                                        for (int n = 0; n < steps.size(); n++) {
-
-                                            geofenceList.add(n, routes.get(l).getLegs().get(m).getSteps().get(n));
-                                            if (n != steps.size() - 1) {
-                                                try {
-                                                    MapsActivity.getMap().addCircle(new CircleOptions()
-                                                            .center(new LatLng(routes.get(l).getLegs().get(m).getSteps().get(n).getStartLocation().latitude, routes.get(l).getLegs().get(m).getSteps().get(n).getStartLocation().longitude))
-                                                            .radius(Constants.GEOFENCE_POINTS_RADIUS)
-                                                            .strokeColor(Color.RED)
-                                                            .fillColor(Color.argb(100, 233, 195, 160)));
-                                                } catch (SecurityException securityException) {
-                                                    Log.e("JSONPARSELOG", securityException.getMessage());
-                                                }
-                                            }else {
-                                                try {
-                                                    MapsActivity.getMap().addCircle(new CircleOptions()
-                                                            .center(new LatLng(routes.get(l).getLegs().get(m).getSteps().get(n).getEndLocation().latitude, routes.get(l).getLegs().get(m).getSteps().get(n).getEndLocation().longitude))
-                                                            .radius(Constants.GEOFENCE_POINTS_RADIUS)
-                                                            .strokeColor(Color.RED)
-                                                            .fillColor(Color.argb(100, 233, 195, 160)));
-                                                } catch (SecurityException securityException) {
-                                                    Log.e("JSONPARSELOG", securityException.getMessage());
-                                                }
-                                            }
-                                        }
                                     }
-                                    PolylineOptions options = new PolylineOptions().width(10).color(Color.BLUE).geodesic(true);
+                                    PolylineOptions options = new PolylineOptions().width(10).color(color).geodesic(true);
+
                                     ArrayList<LatLng> polyList = responseHandler.getRoute().get(l).getListPoints();
                                     for (int z = 0; z < polyList.size(); z++) {
                                         LatLng point = polyList.get(z);
                                         options.add(point);
-                                    }
-                                    MapsActivity.getMap().addPolyline(options);
-                                    args = new Bundle();
-                                    args.putSerializable("routeDetail", responseHandler.getRoute().get(l).getRouteDetails());
-                                }
-                                if (!spOrigin.getSelectedItem().equals(spDestination.getSelectedItem())) {
-                                    FragmentManager fragmentManager = getFragmentManager();
-                                    RouteDetailFragment rf = new RouteDetailFragment();
-                                    rf.setArguments(args);
-                                    fragmentManager.beginTransaction().replace(R.id.content_plan_trip, rf).commit();
 
+                                    }
+                                    options.clickable(true);
+                                    Polyline polyLine = MapsActivity.getMap().addPolyline(options);
+                                    polyLine.setClickable(true);
+                                    polylines.put(responseHandler.getRoute().get(l), polyLine);
                                     try {
+                                        Location current = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+                                        LatLng currentLocation = new LatLng(current.getLatitude(), current.getLongitude());
+                                        MapsActivity.getMap().moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 10));
+                                        Log.i("GEOFENCELOG", "LEAVING ACTIVITY");
+                                        progressBar.setVisibility(View.GONE);
+                                        Log.i("GEOFENCELOG", "TURNED OFF PROGRESSBAR");
+                                        finish();
+                                    }catch (SecurityException sec){
+                                        Log.e("JSONPARSERLOG", sec.getMessage());
 
-                                        MapsActivity.populateStepsGeofenceList(Constants.GEOFENCE_POINTS_RADIUS, geofenceList);
-                                        LocationServices.GeofencingApi.addGeofences(
-                                                MapsActivity.mGoogleApiClient,
-                                                MapsActivity.getGeofencingRequest(),
-                                                MapsActivity.getGeofencePendingIntent()
-                                        ).setResultCallback(PlanTripActivity.this);
-                                        isGeofenceAdded = true;
-                                        MapsActivity.setButtonsEnabledState(isGeofenceAdded);
-                                    } catch (SecurityException se) {
-                                        Log.e("JSONPARSERLOG", se.getMessage());
                                     }
-                                } else {
-                                    showToast("Origin and destination cannot be the same");
+                                    MapsActivity.getMap().setOnPolylineClickListener(new GoogleMap.OnPolylineClickListener() {
+                                        @Override
+                                        public void onPolylineClick(Polyline polyline) {
+                                            Log.i("GEOFENCELOG", "POLYLINE HAS BEEN CLICKED " + polyline.getId());
+                                            MapsActivity.getMapsProgressbar().setVisibility(View.VISIBLE);
+                                           Route selectedRoute = null;
+                                            String id = polyline.getId();
+                                            Iterator<Map.Entry<Route, Polyline>> itr = polylines.entrySet().iterator();
+
+                                            while(itr.hasNext())
+                                            {
+                                                Map.Entry<Route, Polyline> entry = itr.next();
+                                                if(!entry.getValue().getId().equals(id)){
+                                                    Log.i("JSONPARSERLOG", "Key : "+entry.getKey()+" Removed.");
+                                                    entry.getValue().remove();
+                                                    itr.remove();  // Call Iterator's remove method.
+                                                }else{
+                                                    selectedRoute = entry.getKey();
+                                                    Log.i("GEOFENCELOG", "SELECTED ROUTE IS " + selectedRoute.getSummary());
+                                                }
+                                            }
+
+                                            ArrayList<Legs> selectedLegs = selectedRoute.getLegs();
+                                            for (Legs l : selectedLegs){
+                                                ArrayList<Steps> selectedSteps = l.getSteps();
+                                                for (int r = 0; r < selectedSteps.size();r++){
+                                                    Log.i("GEOFENCELOG", "ADDING STEP NO. " + r);
+                                                    geofenceList.add(r, selectedSteps.get(r));
+                                                    try {
+                                                        Log.i("GEOFENCELOG", "ADDING CIRCLE NO. " + r);
+                                                        MapsActivity.getMap().addCircle(new CircleOptions()
+                                                                .center(new LatLng(selectedSteps.get(r).getStartLocation().latitude, selectedSteps.get(r).getStartLocation().longitude))
+                                                                .radius(Constants.GEOFENCE_POINTS_RADIUS)
+                                                                .strokeColor(Color.RED)
+                                                                .fillColor(Color.argb(100, 233, 195, 160)));
+                                                    } catch (SecurityException securityException) {
+                                                        Log.e("JSONPARSELOG", securityException.getMessage());
+                                                    }
+                                                }
+                                            }
+
+                                            if (!spOrigin.getSelectedItem().equals(spDestination.getSelectedItem())) {
+                                                try {
+                                                    Log.i("GEOFENCELOG", "ADDING GEOFENCES, POPULATING GEOFENCE LIST");
+                                                    MapsActivity.populateStepsGeofenceList(Constants.GEOFENCE_POINTS_RADIUS, geofenceList);
+                                                    LocationServices.GeofencingApi.addGeofences(
+                                                            MapsActivity.mGoogleApiClient,
+                                                            MapsActivity.getGeofencingRequest(),
+                                                            MapsActivity.getGeofencePendingIntent()
+                                                    ).setResultCallback(PlanTripActivity.this);
+                                                    isGeofenceAdded = true;
+                                                    Log.i("GEOFENCELOG", "DONE REQUESTING GEOFENCES");
+                                                    MapsActivity.setButtonsEnabledState(isGeofenceAdded);
+                                                } catch (SecurityException se) {
+                                                    Log.e("JSONPARSERLOG", se.getMessage());
+                                                }
+                                            } else {
+                                                showToast("Origin and destination cannot be the same");
+                                            }
+                                        }
+                                    });
                                 }
                             }
 
@@ -290,21 +333,22 @@ public class PlanTripActivity extends AppCompatActivity implements View.OnClickL
     private String getGoogleDirectionsUrl() {
         if (origin != null && destination != null && mode != null && departureTime > 0) {
             String url = "https://maps.googleapis.com/maps/api/directions/json?origin=" + origin.latitude + "," + origin.longitude + "&destination="
-                    + destination.latitude + "," + destination.longitude + "&mode=" + mode + "&departure_time=" + departureTime + "&key=" + Constants.GOOGLE_DIRECTIONS_SERVER_ID;
+                    + destination.latitude + "," + destination.longitude + "&mode=" + mode + "&departure_time=" + departureTime + "&alternatives=true&key=" + Constants.GOOGLE_DIRECTIONS_SERVER_ID;
             return url;
         } else if (origin != null && destination != null && mode == null && departureTime == 0) {
+
             String url = "https://maps.googleapis.com/maps/api/directions/json?origin=" + origin.latitude + "," + origin.longitude + "&destination="
-                    + destination.latitude + "," + destination.longitude + "&key=" + Constants.GOOGLE_DIRECTIONS_SERVER_ID;
+                    + destination.latitude + "," + destination.longitude + "&alternatives=true&key=" + Constants.GOOGLE_DIRECTIONS_SERVER_ID;
             return url;
 
         } else if (origin != null && destination != null && mode != null && departureTime == 0) {
             String url = "https://maps.googleapis.com/maps/api/directions/json?origin=" + origin.latitude + "," + origin.longitude + "&destination="
-                    + destination.latitude + "," + destination.longitude + "&mode=" + mode + "&key=" + Constants.GOOGLE_DIRECTIONS_SERVER_ID;
+                    + destination.latitude + "," + destination.longitude + "&mode=" + mode + "&alternatives=true&key=" + Constants.GOOGLE_DIRECTIONS_SERVER_ID;
             return url;
 
         } else if (origin != null && destination != null && mode == null && departureTime > 0) {
             String url = "https://maps.googleapis.com/maps/api/directions/json?origin=" + origin.latitude + "," + origin.longitude + "&destination="
-                    + destination.latitude + "," + destination.longitude + "&departure_time=" + departureTime + "&key=" + Constants.GOOGLE_DIRECTIONS_SERVER_ID;
+                    + destination.latitude + "," + destination.longitude + "&departure_time=" + departureTime + "&alternatives=true&key=" + Constants.GOOGLE_DIRECTIONS_SERVER_ID;
             return url;
         }
         return null;
@@ -317,48 +361,24 @@ public class PlanTripActivity extends AppCompatActivity implements View.OnClickL
     @Override
     public void onResult(@NonNull Result result) {
         if (result.getStatus().isSuccess()) {
+            Log.i("GEOFENCELOG", "SUCCESSFULLY CREATED GEOFENCES. isGeofenceAdded = " + isGeofenceAdded);
+            MapsActivity.getMapsProgressbar().setVisibility(View.GONE);
             showToast(getString(isGeofenceAdded ? R.string.geofences_added : R.string.geofences_removed));
+
+
         } else {
             showToast("Error");
         }
     }
 
-    protected void populateGeofenceList(ArrayList<Steps> input) {
-        //Init Geofence list
-        mGeofenceList = new ArrayList<Geofence>();
-        for (Steps s : input) {
-
-            double lat = s.getStartLocation().latitude;
-            double lng = s.getStartLocation().longitude;
-            mGeofenceList.add(new Geofence.Builder()
-                    .setRequestId("point")
-                    .setCircularRegion(
-                            lat,
-                            lng,
-                            Constants.GEOFENCE_POINTS_RADIUS
-                    )
-                    .setExpirationDuration(Constants.GEOFENCE_EXPIRATION_IN_MILLISECONDS)
-                    .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER |
-                            Geofence.GEOFENCE_TRANSITION_EXIT)
-                    .build());
-        }
+    public static void hideSoftKeyboard(Activity activity) {
+        InputMethodManager inputMethodManager =
+                (InputMethodManager) activity.getSystemService(
+                        Activity.INPUT_METHOD_SERVICE);
+        inputMethodManager.hideSoftInputFromWindow(
+                activity.getCurrentFocus().getWindowToken(), 0);
     }
 
-    public GeofencingRequest getGeofencingRequest() {
-        GeofencingRequest.Builder builder = new GeofencingRequest.Builder();
-        builder.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER);
-        builder.addGeofences(mGeofenceList);
-        return builder.build();
-    }
-
-    public PendingIntent getGeofencePendingIntent() {
-        if (mGeofencePendingIntent != null) {
-            return mGeofencePendingIntent;
-        }
-        Intent intent = new Intent(this, GeofenceTransitionsIntentService.class);
-        return PendingIntent.getService(this, 0, intent, PendingIntent.
-                FLAG_UPDATE_CURRENT);
-    }
 
     protected synchronized void buildGoogleApiClient() {
         mGoogleApiClient = new GoogleApiClient.Builder(this)
