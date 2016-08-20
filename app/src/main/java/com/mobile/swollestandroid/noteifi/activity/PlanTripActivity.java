@@ -91,7 +91,7 @@ public class PlanTripActivity extends AppCompatActivity implements View.OnClickL
 
 
     private Bundle args;
-    private Map<Route,Polyline> polylines = new HashMap<>();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -176,113 +176,16 @@ public class PlanTripActivity extends AppCompatActivity implements View.OnClickL
                 break;
             case R.id.btnGetRoutes:
                 if (mGoogleApiClient.isConnected()) {
-                    progressBar.setVisibility(View.VISIBLE);
+
                     GetGoogleDirectionsTask task = new GetGoogleDirectionsTask(new AsyncGoogleDirectionResponse() {
                         @Override
-                        public void processFinish(final GoogleDirectionsResponseHandler responseHandler) {
-                            if (responseHandler != null) {
+                        public void processFinish(GoogleDirectionsResponseHandler responseHandler) {
 
-                                ArrayList<Route> routes = responseHandler.getRoute();
-                                final ArrayList<Steps> geofenceList = new ArrayList<>();
-                                for (int l = 0; l < routes.size(); l++) {
-                                    Random rnd = new Random();
-                                    final int color = Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
-                                    Log.i("JSONPARSERLOG", "ROUTE NUMBER " + l);
-                                    ArrayList<Legs> legs = routes.get(l).getLegs();
-                                    for (int m = 0; m < legs.size(); m++) {
-
-                                        responseHandler.getRoute().get(m).getRouteDetails().setOrigin(spOrigin.getSelectedItem().toString());
-                                        responseHandler.getRoute().get(m).getRouteDetails().setDestination(spDestination.getSelectedItem().toString());
-                                    }
-                                    PolylineOptions options = new PolylineOptions().width(10).color(color).geodesic(true);
-
-                                    ArrayList<LatLng> polyList = responseHandler.getRoute().get(l).getListPoints();
-                                    for (int z = 0; z < polyList.size(); z++) {
-                                        LatLng point = polyList.get(z);
-                                        options.add(point);
-
-                                    }
-                                    options.clickable(true);
-                                    Polyline polyLine = MapsActivity.getMap().addPolyline(options);
-                                    polyLine.setClickable(true);
-                                    polylines.put(responseHandler.getRoute().get(l), polyLine);
-                                    try {
-                                        Location current = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-                                        LatLng currentLocation = new LatLng(current.getLatitude(), current.getLongitude());
-                                        MapsActivity.getMap().moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 10));
-                                        Log.i("GEOFENCELOG", "LEAVING ACTIVITY");
-                                        progressBar.setVisibility(View.GONE);
-                                        Log.i("GEOFENCELOG", "TURNED OFF PROGRESSBAR");
-                                        finish();
-                                    }catch (SecurityException sec){
-                                        Log.e("JSONPARSERLOG", sec.getMessage());
-
-                                    }
-                                    MapsActivity.getMap().setOnPolylineClickListener(new GoogleMap.OnPolylineClickListener() {
-                                        @Override
-                                        public void onPolylineClick(Polyline polyline) {
-                                            Log.i("GEOFENCELOG", "POLYLINE HAS BEEN CLICKED " + polyline.getId());
-                                            MapsActivity.getMapsProgressbar().setVisibility(View.VISIBLE);
-                                           Route selectedRoute = null;
-                                            String id = polyline.getId();
-                                            Iterator<Map.Entry<Route, Polyline>> itr = polylines.entrySet().iterator();
-
-                                            while(itr.hasNext())
-                                            {
-                                                Map.Entry<Route, Polyline> entry = itr.next();
-                                                if(!entry.getValue().getId().equals(id)){
-                                                    Log.i("JSONPARSERLOG", "Key : "+entry.getKey()+" Removed.");
-                                                    entry.getValue().remove();
-                                                    itr.remove();  // Call Iterator's remove method.
-                                                }else{
-                                                    selectedRoute = entry.getKey();
-                                                    Log.i("GEOFENCELOG", "SELECTED ROUTE IS " + selectedRoute.getSummary());
-                                                }
-                                            }
-
-                                            ArrayList<Legs> selectedLegs = selectedRoute.getLegs();
-                                            for (Legs l : selectedLegs){
-                                                ArrayList<Steps> selectedSteps = l.getSteps();
-                                                for (int r = 0; r < selectedSteps.size();r++){
-                                                    Log.i("GEOFENCELOG", "ADDING STEP NO. " + r);
-                                                    geofenceList.add(r, selectedSteps.get(r));
-                                                    try {
-                                                        Log.i("GEOFENCELOG", "ADDING CIRCLE NO. " + r);
-                                                        MapsActivity.getMap().addCircle(new CircleOptions()
-                                                                .center(new LatLng(selectedSteps.get(r).getStartLocation().latitude, selectedSteps.get(r).getStartLocation().longitude))
-                                                                .radius(Constants.GEOFENCE_POINTS_RADIUS)
-                                                                .strokeColor(Color.RED)
-                                                                .fillColor(Color.argb(100, 233, 195, 160)));
-                                                    } catch (SecurityException securityException) {
-                                                        Log.e("JSONPARSELOG", securityException.getMessage());
-                                                    }
-                                                }
-                                            }
-
-                                            if (!spOrigin.getSelectedItem().equals(spDestination.getSelectedItem())) {
-                                                try {
-                                                    Log.i("GEOFENCELOG", "ADDING GEOFENCES, POPULATING GEOFENCE LIST");
-                                                    MapsActivity.populateStepsGeofenceList(Constants.GEOFENCE_POINTS_RADIUS, geofenceList);
-                                                    LocationServices.GeofencingApi.addGeofences(
-                                                            MapsActivity.mGoogleApiClient,
-                                                            MapsActivity.getGeofencingRequest(),
-                                                            MapsActivity.getGeofencePendingIntent()
-                                                    ).setResultCallback(PlanTripActivity.this);
-                                                    isGeofenceAdded = true;
-                                                    Log.i("GEOFENCELOG", "DONE REQUESTING GEOFENCES");
-                                                    MapsActivity.setButtonsEnabledState(isGeofenceAdded);
-                                                } catch (SecurityException se) {
-                                                    Log.e("JSONPARSERLOG", se.getMessage());
-                                                }
-                                            } else {
-                                                showToast("Origin and destination cannot be the same");
-                                            }
-                                        }
-                                    });
-                                }
-                            }
-
-
+                            Intent mapsIntent = new Intent(PlanTripActivity.this, MapsActivity.class);
+                            //Bundle extras = new Bundle();
+                            //extras.putSerializable("routesResponse", responseHandler);
+                            mapsIntent.putExtra("routesResponse", responseHandler);
+                            startActivity(mapsIntent);
                         }
                     });
                     task.setProgressBar(progressBar);
@@ -361,8 +264,6 @@ public class PlanTripActivity extends AppCompatActivity implements View.OnClickL
     @Override
     public void onResult(@NonNull Result result) {
         if (result.getStatus().isSuccess()) {
-            Log.i("GEOFENCELOG", "SUCCESSFULLY CREATED GEOFENCES. isGeofenceAdded = " + isGeofenceAdded);
-            MapsActivity.getMapsProgressbar().setVisibility(View.GONE);
             showToast(getString(isGeofenceAdded ? R.string.geofences_added : R.string.geofences_removed));
 
 

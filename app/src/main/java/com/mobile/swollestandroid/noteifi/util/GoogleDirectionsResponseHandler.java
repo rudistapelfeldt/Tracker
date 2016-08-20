@@ -4,12 +4,13 @@ import com.mobile.swollestandroid.noteifi.trip.parameters.Legs;
 import com.mobile.swollestandroid.noteifi.trip.parameters.Route;
 import com.mobile.swollestandroid.noteifi.trip.parameters.Waypoints;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
  * Created by Rudi on 7/24/2016.
  */
-public class GoogleDirectionsResponseHandler {
+public class GoogleDirectionsResponseHandler implements Serializable{
 
     private String status;
     private Legs legs = new Legs();

@@ -13,6 +13,7 @@ import com.mobile.swollestandroid.noteifi.interfaces.AsyncGoogleDirectionRespons
 import com.mobile.swollestandroid.noteifi.util.AppController;
 import com.mobile.swollestandroid.noteifi.util.GoogleDirectionsResponseHandler;
 import com.mobile.swollestandroid.noteifi.util.GoogleResponseJSONParser;
+import com.mobile.swollestandroid.noteifi.util.JsonParser;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -42,9 +43,7 @@ public class GetGoogleDirectionsTask extends AsyncTask<String, Integer, GoogleDi
     @Override
     protected void onProgressUpdate(Integer... values) {
         super.onProgressUpdate(values);
-        if (this.progressBar != null) {
-            progressBar.setProgress(values[0]);
-        }
+
     }
 
     @Override
@@ -57,7 +56,12 @@ public class GetGoogleDirectionsTask extends AsyncTask<String, Integer, GoogleDi
     @Override
     protected GoogleDirectionsResponseHandler doInBackground(String... params) {
         String url = params[0];
-        JsonObjectRequest jsObjRequest = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+        JsonParser jsonp = new JsonParser();
+        JSONObject response = jsonp.getJSONFromUrl(url);
+        GoogleResponseJSONParser jsonParser = new GoogleResponseJSONParser();
+        GoogleDirectionsResponseHandler handler = jsonParser.parse(response);
+
+        /*JsonObjectRequest jsObjRequest = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
 
                     @Override
                     public void onResponse(JSONObject response) {
@@ -72,7 +76,13 @@ public class GetGoogleDirectionsTask extends AsyncTask<String, Integer, GoogleDi
                         error.printStackTrace();
                     }
                 });
-                AppController.getInstance().addToRequestQueue(jsObjRequest);
-                return null;
+                AppController.getInstance().addToRequestQueue(jsObjRequest);*/
+                return handler;
+    }
+
+    @Override
+    protected void onPreExecute() {
+        super.onPreExecute();
+        progressBar.setVisibility(View.VISIBLE);
     }
 }

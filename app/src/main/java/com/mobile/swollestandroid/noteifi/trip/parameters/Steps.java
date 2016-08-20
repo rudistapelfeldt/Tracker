@@ -1,19 +1,18 @@
 package com.mobile.swollestandroid.noteifi.trip.parameters;
 
-import com.google.android.gms.maps.model.LatLng;
-
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
  * Created by Rudi on 7/25/2016.
  */
-public class Steps {
+public class Steps implements Serializable{
 
         private String htmlInstructions;
         private String distance;
         private String duration;
-        private LatLng startLocation = null;
-        private LatLng endLocation = null;
+        private LatLong startLocation = null;
+        private LatLong endLocation = null;
         private String polyline;
         private ArrayList<String> innersteps = new ArrayList<>(); //for transit mode
 
@@ -41,19 +40,19 @@ public class Steps {
             this.duration = duration;
         }
 
-        public LatLng getStartLocation() {
+        public LatLong getStartLocation() {
             return startLocation;
         }
 
-        public void setStartLocation(LatLng startLocation) {
+        public void setStartLocation(LatLong startLocation) {
             this.startLocation = startLocation;
         }
 
-        public LatLng getEndLocation() {
+        public LatLong getEndLocation() {
             return endLocation;
         }
 
-        public void setEndLocation(LatLng endLocation) {
+        public void setEndLocation(LatLong endLocation) {
             this.endLocation = endLocation;
         }
 

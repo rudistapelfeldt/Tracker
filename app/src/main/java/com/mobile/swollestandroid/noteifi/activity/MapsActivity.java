@@ -57,10 +57,16 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
+import com.mobile.swollestandroid.noteifi.trip.parameters.LatLong;
+import com.mobile.swollestandroid.noteifi.trip.parameters.Legs;
+import com.mobile.swollestandroid.noteifi.trip.parameters.Route;
 import com.mobile.swollestandroid.noteifi.trip.parameters.Steps;
 import com.mobile.swollestandroid.noteifi.util.Constants;
 import com.mobile.swollestandroid.noteifi.util.DatabaseHelper;
 import com.mobile.swollestandroid.noteifi.service.GeofenceTransitionsIntentService;
+import com.mobile.swollestandroid.noteifi.util.GoogleDirectionsResponseHandler;
 import com.mobile.swollestandroid.noteifi.util.Model;
 import com.mobile.swollestandroid.noteifi.adapter.MyAdapter;
 import com.mobile.swollestandroid.noteifi.R;
@@ -68,10 +74,12 @@ import com.mobile.swollestandroid.noteifi.R;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Random;
 
 import static com.mobile.swollestandroid.noteifi.R.layout.activity_maps2;
 
@@ -82,7 +90,7 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
     private static PendingIntent mGeofencePendingIntent;
     protected static ArrayList<Geofence> mGeofenceList;
     private static Button mAddGeofencesButton, mRemoveGeofenceButton;
-    public static GoogleApiClient mGoogleApiClient;
+    public GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
     private boolean isGeofenceAdded = false;
     private static Context mContext;
@@ -98,12 +106,16 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
     private String TAG = "MapsActivity";
     private SharedPreferences.Editor editor;
     private static ProgressBar mapsProgressbar;
+    private Map<Route,Polyline> polylines = new HashMap<>();
+    private ArrayList<LatLng> listPoints = new ArrayList<>();
+    private Bundle extras;
+
 
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
      */
-    public static GoogleApiClient client;
+    //public static GoogleApiClient client;
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
@@ -111,6 +123,8 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
         super.onCreate(savedInstanceState);
         setContentView(activity_maps2);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        extras = getIntent().getExtras();
+
         //progress bar
         mapsProgressbar = (ProgressBar)findViewById(R.id.map_progressBar);
         mContext = this;
@@ -148,7 +162,8 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
         mapFragment.getMapAsync(this);
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
+        //client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
+
     }
 
     private void initListView() {
@@ -175,6 +190,7 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
     protected void onResume() {
         super.onResume();
         initListView();
+        //mGoogleApiClient.connect();
 
     }
 
@@ -200,18 +216,23 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
+        mGoogleApiClient.connect();
         try {
             mMap = googleMap;
             enableMyLocation();
-            mGoogleApiClient.connect();
         } catch (SecurityException sec) {
-
+            Log.i(TAG, sec.getMessage());
         }
     }
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
+        showToast("client connected");
         try {
+            if (extras != null){
+                Log.i(TAG, "Got extras");
+                setUpMap((GoogleDirectionsResponseHandler)extras.getSerializable("routesResponse"));
+            }
             Location current = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
             if (current != null) {
                 LatLng currentLocation = new LatLng(current.getLatitude(), current.getLongitude());
@@ -241,6 +262,8 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
     public void onResult(@NonNull Result result) {
         if (result.getStatus().isSuccess()) {
             showToast(getString(isGeofenceAdded ? R.string.geofences_added : R.string.geofences_removed));
+            geofenceListView.setVisibility(View.VISIBLE);
+            mapsProgressbar.setVisibility(View.GONE);
         } else {
             showToast("Error");
         }
@@ -301,11 +324,11 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
         Geocoder geocode = new Geocoder(mContext, Locale.getDefault());
         for(int i = 0; i < steps.size(); i++){
             if (i == (steps.size() - 1)){
-                lat = steps.get(i).getEndLocation().latitude;
-                lng = steps.get(i).getEndLocation().longitude;
+                lat = steps.get(i).getEndLocation().getLat();
+                lng = steps.get(i).getEndLocation().getLng();
             }else if (i < (steps.size() - 1)){
-                lat = steps.get(i).getStartLocation().latitude;
-                lng = steps.get(i).getStartLocation().longitude;
+                lat = steps.get(i).getStartLocation().getLat();
+                lng = steps.get(i).getStartLocation().getLng();
             }
             try {
                 ListIterator<Address> iterator = geocode.getFromLocation(lat, lng, 1).listIterator();
@@ -512,7 +535,7 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
 
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client.connect();
+        mGoogleApiClient.connect();
         /*Action viewAction = Action.newAction(
                 Action.TYPE_VIEW, // TODO: choose an action type.
                 "Maps Page", // TODO: Define a title for the content shown.
@@ -546,8 +569,152 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
         client.disconnect();*/
     }
 
-    public static ProgressBar getMapsProgressbar(){
-        return mapsProgressbar;
+    private void setUpMap(GoogleDirectionsResponseHandler responseHandler){
+        if (responseHandler != null) {
+
+            final StringBuilder mOrigin = new StringBuilder("");
+            final StringBuilder mDestination = new StringBuilder("");
+            ArrayList<Route> routes = responseHandler.getRoute();
+            final ArrayList<Steps> geofenceList = new ArrayList<>();
+            for (int l = 0; l < routes.size(); l++) {
+                Random rnd = new Random();
+                listPoints = decodePoly(routes.get(l).getEncodedString());
+                final int color = Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
+                Log.i("JSONPARSERLOG", "ROUTE NUMBER " + l);
+                ArrayList<Legs> legs = routes.get(l).getLegs();
+                for (int m = 0; m < legs.size(); m++) {
+
+                    if (!mOrigin.toString().equals("") && !mDestination.toString().equals("")) {
+                        mOrigin.append(responseHandler.getRoute().get(m).getLegs().get(m).getStartAddress());
+                        responseHandler.getRoute().get(m).getRouteDetails().setOrigin(mOrigin.toString());
+
+                        mDestination.append(responseHandler.getRoute().get(m).getLegs().get(m).getEndAddress());
+                        responseHandler.getRoute().get(m).getRouteDetails().setDestination(mDestination.toString());
+                    }
+                }
+                PolylineOptions options = new PolylineOptions().width(10).color(color).geodesic(true);
+
+                ArrayList<LatLng> polyList = listPoints;
+                for (int z = 0; z < polyList.size(); z++) {
+                    LatLng point = polyList.get(z);
+                    options.add(point);
+
+                }
+                options.clickable(true);
+                Polyline polyLine = mMap.addPolyline(options);
+                polyLine.setClickable(true);
+                polylines.put(responseHandler.getRoute().get(l), polyLine);
+                try {
+                    if (!mGoogleApiClient.isConnected()){
+                        Log.i(TAG, "cLIENT NOT CONNECTED");
+                    }
+                    Location current = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+                    LatLng currentLocation = new LatLng(current.getLatitude(), current.getLongitude());
+                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation, 12));
+
+                }catch (SecurityException sec){
+                    Log.e("JSONPARSERLOG", sec.getMessage());
+
+                }
+                mMap.setOnPolylineClickListener(new GoogleMap.OnPolylineClickListener() {
+                    @Override
+                    public void onPolylineClick(Polyline polyline) {
+                        Log.i("GEOFENCELOG", "POLYLINE HAS BEEN CLICKED " + polyline.getId());
+                        Route selectedRoute = null;
+                        String id = polyline.getId();
+                        Iterator<Map.Entry<Route, Polyline>> itr = polylines.entrySet().iterator();
+
+                        while(itr.hasNext())
+                        {
+                            Map.Entry<Route, Polyline> entry = itr.next();
+                            if(!entry.getValue().getId().equals(id)){
+                                Log.i("JSONPARSERLOG", "Key : "+entry.getKey()+" Removed.");
+                                entry.getValue().remove();
+                                itr.remove();  // Call Iterator's remove method.
+                            }else{
+                                selectedRoute = entry.getKey();
+                                Log.i("GEOFENCELOG", "SELECTED ROUTE IS " + selectedRoute.getSummary());
+                            }
+
+                        }
+
+                        ArrayList<Legs> selectedLegs = selectedRoute.getLegs();
+                        for (Legs l : selectedLegs){
+                            ArrayList<Steps> selectedSteps = l.getSteps();
+                            for (int r = 0; r < selectedSteps.size();r++){
+                                Log.i("GEOFENCELOG", "ADDING STEP NO. " + r);
+                                geofenceList.add(r, selectedSteps.get(r));
+                                try {
+                                    Log.i("GEOFENCELOG", "ADDING CIRCLE NO. " + r);
+                                    mMap.addCircle(new CircleOptions()
+                                            .center(new LatLng(selectedSteps.get(r).getStartLocation().getLat(), selectedSteps.get(r).getStartLocation().getLng()))
+                                            .radius(Constants.GEOFENCE_POINTS_RADIUS)
+                                            .strokeColor(Color.RED)
+                                            .fillColor(Color.argb(100, 233, 195, 160)));
+                                } catch (SecurityException securityException) {
+                                    Log.e("JSONPARSELOG", securityException.getMessage());
+                                }
+                            }
+                        }
+
+                        if (!mOrigin.equals(mDestination)) {
+                            try {
+                                Log.i("GEOFENCELOG", "ADDING GEOFENCES, POPULATING GEOFENCE LIST");
+                                populateStepsGeofenceList(Constants.GEOFENCE_POINTS_RADIUS, geofenceList);
+                                LocationServices.GeofencingApi.addGeofences(
+                                        mGoogleApiClient,
+                                        getGeofencingRequest(),
+                                        getGeofencePendingIntent()
+                                ).setResultCallback(MapsActivity.this);
+                                isGeofenceAdded = true;
+                                Log.i("GEOFENCELOG", "DONE REQUESTING GEOFENCES");
+                                setButtonsEnabledState(isGeofenceAdded);
+                            } catch (SecurityException se) {
+                                Log.e("JSONPARSERLOG", se.getMessage());
+                            }
+                        } else {
+                            showToast("Origin and destination cannot be the same");
+                        }
+                    }
+                });
+            }
+        }else{
+            Log.i("JSONPARSERLOG", "RESPONSE IS NULL");
+        }
+    }
+
+    private ArrayList<LatLng> decodePoly(String encoded) {
+
+        ArrayList<LatLng> poly = new ArrayList<LatLng>();
+        int index = 0, len = encoded.length();
+        int lat = 0, lng = 0;
+
+        while (index < len) {
+            int b, shift = 0, result = 0;
+            do {
+                b = encoded.charAt(index++) - 63;
+                result |= (b & 0x1f) << shift;
+                shift += 5;
+            } while (b >= 0x20);
+            int dlat = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
+            lat += dlat;
+
+            shift = 0;
+            result = 0;
+            do {
+                b = encoded.charAt(index++) - 63;
+                result |= (b & 0x1f) << shift;
+                shift += 5;
+            } while (b >= 0x20);
+            int dlng = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
+            lng += dlng;
+
+            LatLng p = new LatLng((((double) lat / 1E5)),
+                    (((double) lng / 1E5)));
+            poly.add(p);
+        }
+
+        return poly;
     }
 }
 
