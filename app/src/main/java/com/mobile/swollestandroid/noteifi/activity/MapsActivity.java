@@ -57,6 +57,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.mobile.swollestandroid.noteifi.trip.parameters.LatLong;
@@ -105,11 +106,13 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
     private MyAdapter postAdapter;
     private String TAG = "MapsActivity";
     private SharedPreferences.Editor editor;
-    private static ProgressBar mapsProgressbar;
+    private ProgressBar mapsProgressbar;
     private Map<Route,Polyline> polylines = new HashMap<>();
     private ArrayList<LatLng> listPoints = new ArrayList<>();
     private Bundle extras;
-
+    private ViewGroup myHeader;
+    private boolean isBusy = false;
+    private Boolean isPolyClicked = false;
 
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
@@ -152,7 +155,7 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
         geoMap = Constants.getGeoMap();
         geofenceListView = (ListView) findViewById(R.id.lvChooseGeofence);
         LayoutInflater myinflater = getLayoutInflater();
-        ViewGroup myHeader = (ViewGroup) myinflater.inflate(R.layout.list_view_header, geofenceListView, false);
+        myHeader = (ViewGroup) myinflater.inflate(R.layout.list_view_header, geofenceListView, false);
         geofenceListView.addHeaderView(myHeader, null, false);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setActionBar(toolbar);
@@ -223,6 +226,7 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
         } catch (SecurityException sec) {
             Log.i(TAG, sec.getMessage());
         }
+
     }
 
     @Override
@@ -262,8 +266,8 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
     public void onResult(@NonNull Result result) {
         if (result.getStatus().isSuccess()) {
             showToast(getString(isGeofenceAdded ? R.string.geofences_added : R.string.geofences_removed));
-            geofenceListView.setVisibility(View.VISIBLE);
-            mapsProgressbar.setVisibility(View.GONE);
+            isBusy = false;
+            setViewVisibility(isBusy);
         } else {
             showToast("Error");
         }
@@ -592,17 +596,21 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
                         responseHandler.getRoute().get(m).getRouteDetails().setDestination(mDestination.toString());
                     }
                 }
-                PolylineOptions options = new PolylineOptions().width(10).color(color).geodesic(true);
+                PolylineOptions options = new PolylineOptions().width(14).color(color).geodesic(true);
 
                 ArrayList<LatLng> polyList = listPoints;
-                for (int z = 0; z < polyList.size(); z++) {
-                    LatLng point = polyList.get(z);
-                    options.add(point);
 
-                }
-                options.clickable(true);
+                //for (int z = 0; z < polyList.size(); z++) {
+                //    LatLng point = polyList.get(z);
+                    options.addAll(polyList);
+
+                //}
+                //options.clickable(true);
+                
                 Polyline polyLine = mMap.addPolyline(options);
+
                 polyLine.setClickable(true);
+
                 polylines.put(responseHandler.getRoute().get(l), polyLine);
                 try {
                     if (!mGoogleApiClient.isConnected()){
@@ -619,61 +627,70 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
                 mMap.setOnPolylineClickListener(new GoogleMap.OnPolylineClickListener() {
                     @Override
                     public void onPolylineClick(Polyline polyline) {
-                        Log.i("GEOFENCELOG", "POLYLINE HAS BEEN CLICKED " + polyline.getId());
-                        Route selectedRoute = null;
-                        String id = polyline.getId();
-                        Iterator<Map.Entry<Route, Polyline>> itr = polylines.entrySet().iterator();
+                        if (!isPolyClicked) {
+                            Log.i("GEOFENCELOG", "POLYLINE HAS BEEN CLICKED " + polyline.getId());
+                            isBusy = true;
+                            setViewVisibility(isBusy);
+                            Route selectedRoute = null;
+                            String id = polyline.getId();
+                            Iterator<Map.Entry<Route, Polyline>> itr = polylines.entrySet().iterator();
 
-                        while(itr.hasNext())
-                        {
-                            Map.Entry<Route, Polyline> entry = itr.next();
-                            if(!entry.getValue().getId().equals(id)){
-                                Log.i("JSONPARSERLOG", "Key : "+entry.getKey()+" Removed.");
-                                entry.getValue().remove();
-                                itr.remove();  // Call Iterator's remove method.
-                            }else{
-                                selectedRoute = entry.getKey();
-                                Log.i("GEOFENCELOG", "SELECTED ROUTE IS " + selectedRoute.getSummary());
-                            }
+                            while (itr.hasNext()) {
+                                Map.Entry<Route, Polyline> entry = itr.next();
+                                if (!entry.getValue().getId().equals(id)) {
+                                    Log.i("JSONPARSERLOG", "Key : " + entry.getKey() + " Removed.");
+                                    entry.getValue().remove();
+                                    itr.remove();  // Call Iterator's remove method.
 
-                        }
+                                } else {
+                                    selectedRoute = entry.getKey();
+                                    Log.i("GEOFENCELOG", "SELECTED ROUTE IS " + selectedRoute.getSummary());
+                                    ArrayList<Legs> selectedLegs = selectedRoute.getLegs();
+                                    for (Legs l : selectedLegs) {
+                                        ArrayList<Steps> selectedSteps = l.getSteps();
+                                        for (int r = 0; r < selectedSteps.size(); r++) {
 
-                        ArrayList<Legs> selectedLegs = selectedRoute.getLegs();
-                        for (Legs l : selectedLegs){
-                            ArrayList<Steps> selectedSteps = l.getSteps();
-                            for (int r = 0; r < selectedSteps.size();r++){
-                                Log.i("GEOFENCELOG", "ADDING STEP NO. " + r);
-                                geofenceList.add(r, selectedSteps.get(r));
-                                try {
-                                    Log.i("GEOFENCELOG", "ADDING CIRCLE NO. " + r);
-                                    mMap.addCircle(new CircleOptions()
-                                            .center(new LatLng(selectedSteps.get(r).getStartLocation().getLat(), selectedSteps.get(r).getStartLocation().getLng()))
-                                            .radius(Constants.GEOFENCE_POINTS_RADIUS)
-                                            .strokeColor(Color.RED)
-                                            .fillColor(Color.argb(100, 233, 195, 160)));
-                                } catch (SecurityException securityException) {
-                                    Log.e("JSONPARSELOG", securityException.getMessage());
+                                            //mMap.addMarker(new MarkerOptions().position(new LatLng(selectedSteps.get(r).getStartLocation().getLat(), selectedSteps.get(r).getStartLocation().getLng())));
+
+                                            Log.i("GEOFENCELOG", "ADDING STEP NO. " + r);
+                                            geofenceList.add(r, selectedSteps.get(r));
+                                            try {
+                                                Log.i("GEOFENCELOG", "ADDING CIRCLE NO. " + r);
+                                                mMap.addCircle(new CircleOptions()
+                                                        .center(new LatLng(selectedSteps.get(r).getStartLocation().getLat(), selectedSteps.get(r).getStartLocation().getLng()))
+                                                        .radius(Constants.GEOFENCE_POINTS_RADIUS)
+                                                        .strokeColor(Color.RED)
+                                                        .strokeWidth(2)
+                                                        .fillColor(Color.argb(100, 233, 195, 160)));
+                                            } catch (SecurityException securityException) {
+                                                Log.e("JSONPARSELOG", securityException.getMessage());
+                                            }
+
+                                        }
+                                    }
+
+                                    if (!mOrigin.equals(mDestination)) {
+                                        try {
+                                            Log.i("GEOFENCELOG", "ADDING GEOFENCES, POPULATING GEOFENCE LIST");
+                                            populateStepsGeofenceList(Constants.GEOFENCE_POINTS_RADIUS, geofenceList);
+                                            LocationServices.GeofencingApi.addGeofences(
+                                                    mGoogleApiClient,
+                                                    getGeofencingRequest(),
+                                                    getGeofencePendingIntent()
+                                            ).setResultCallback(MapsActivity.this);
+                                            isGeofenceAdded = true;
+                                            Log.i("GEOFENCELOG", "DONE REQUESTING GEOFENCES");
+                                            setButtonsEnabledState(isGeofenceAdded);
+                                        } catch (SecurityException se) {
+                                            Log.e("JSONPARSERLOG", se.getMessage());
+                                        }
+                                    } else {
+                                        showToast("Origin and destination cannot be the same");
+                                    }
                                 }
-                            }
-                        }
 
-                        if (!mOrigin.equals(mDestination)) {
-                            try {
-                                Log.i("GEOFENCELOG", "ADDING GEOFENCES, POPULATING GEOFENCE LIST");
-                                populateStepsGeofenceList(Constants.GEOFENCE_POINTS_RADIUS, geofenceList);
-                                LocationServices.GeofencingApi.addGeofences(
-                                        mGoogleApiClient,
-                                        getGeofencingRequest(),
-                                        getGeofencePendingIntent()
-                                ).setResultCallback(MapsActivity.this);
-                                isGeofenceAdded = true;
-                                Log.i("GEOFENCELOG", "DONE REQUESTING GEOFENCES");
-                                setButtonsEnabledState(isGeofenceAdded);
-                            } catch (SecurityException se) {
-                                Log.e("JSONPARSERLOG", se.getMessage());
                             }
-                        } else {
-                            showToast("Origin and destination cannot be the same");
+                            isPolyClicked = true;
                         }
                     }
                 });
@@ -715,6 +732,18 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
         }
 
         return poly;
+    }
+
+    private void setViewVisibility(boolean isBusy){
+        if (!isBusy) {
+            myHeader.setVisibility(View.VISIBLE);
+            geofenceListView.setVisibility(View.VISIBLE);
+            mapsProgressbar.setVisibility(View.GONE);
+        }else{
+            myHeader.setVisibility(View.GONE);
+            geofenceListView.setVisibility(View.GONE);
+            mapsProgressbar.setVisibility(View.VISIBLE);
+        }
     }
 }
 

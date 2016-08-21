@@ -26,11 +26,11 @@ public class GoogleResponseJSONParser {
         GoogleDirectionsResponseHandler handler = new GoogleDirectionsResponseHandler();
         RouteDetail routeDetail = new RouteDetail();
         try {
-            JSONArray waypoints = response.getJSONArray("geocoded_waypoints");
+            /*JSONArray waypoints = response.getJSONArray("geocoded_waypoints");
             for(int i = 0; i < waypoints.length();i++){
                 JSONObject wp = waypoints.getJSONObject(i);
                 handler.getWaypoints().getPlaceID().add(wp.getString("place_id"));
-            }
+            }*/
             JSONArray mRoutes = response.getJSONArray("routes");
 
             for(int i = 0; i < mRoutes.length();i++){
