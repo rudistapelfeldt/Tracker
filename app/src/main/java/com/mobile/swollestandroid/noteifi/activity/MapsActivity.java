@@ -21,6 +21,7 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.BottomSheetBehavior;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
@@ -36,6 +37,8 @@ import android.widget.CheckBox;
 import android.widget.HeaderViewListAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Toolbar;
 
@@ -46,6 +49,7 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.Result;
 import com.google.android.gms.common.api.ResultCallback;
 
+import com.google.android.gms.common.server.converter.StringToIntConverter;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationListener;
@@ -84,7 +88,7 @@ import java.util.Random;
 
 import static com.mobile.swollestandroid.noteifi.R.layout.activity_maps2;
 
-public class MapsActivity extends FragmentActivity implements ListView.OnItemClickListener, LocationListener, OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, ResultCallback {
+public class MapsActivity extends FragmentActivity implements View.OnClickListener, ListView.OnItemClickListener, LocationListener, OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, ResultCallback {
 
     private static GoogleMap mMap;
     private LocationManager locationManager;
@@ -113,6 +117,16 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
     private ViewGroup myHeader;
     private boolean isBusy = false;
     private Boolean isPolyClicked = false;
+    private final ArrayList<Steps> geofenceList = new ArrayList<>();
+    private final StringBuilder mOrigin = new StringBuilder("");
+    private final StringBuilder mDestination = new StringBuilder("");
+    //bottom sheet variables
+    private View bottomSheet;
+    private TextView tvbsHdr, tvbsSummary, tvbsSummaryData, tvbsWarning, tvbsWarningData, tvbsDuration, tvbsDurationData, tvbsDurationT, tvbsDurationTData;
+    private Button btnbsSelectRoute;
+
+    //selected polyline
+    private Polyline selectedPolyline;
 
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
@@ -124,11 +138,53 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(activity_maps2);
+        setContentView(R.layout.activity_maps2);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         extras = getIntent().getExtras();
 
-        //progress bar
+        //bottom sheet
+        bottomSheet = findViewById(R.id.design_bottom_sheet);
+        tvbsHdr = (TextView)findViewById(R.id.bottom_sheet_hdr);
+        tvbsSummary = (TextView)findViewById(R.id.bottom_sheet_summary);
+        tvbsSummaryData = (TextView)findViewById(R.id.bottom_sheet_summary_data);
+        tvbsWarning = (TextView)findViewById(R.id.bottom_sheet_warning);
+        tvbsWarningData = (TextView)findViewById(R.id.bottom_sheet_warning_data);
+        tvbsDuration = (TextView)findViewById(R.id.bottom_sheet_duration);
+        tvbsDurationData = (TextView)findViewById(R.id.bottom_sheet_duration_data);
+        tvbsDurationT = (TextView)findViewById(R.id.bottom_sheet_duration_traffic);
+        tvbsDurationTData = (TextView)findViewById(R.id.bottom_sheet_duration_traffic_data);
+        btnbsSelectRoute = (Button)findViewById(R.id.bottom_sheet_btn_select);
+        btnbsSelectRoute.setOnClickListener(this);
+
+        final BottomSheetBehavior behaviour = BottomSheetBehavior.from(bottomSheet);
+        behaviour.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+                                             @Override
+                                             public void onStateChanged(@NonNull View bottomSheet, int newState) {
+                                                 switch (newState) {
+                                                     case BottomSheetBehavior.STATE_DRAGGING:
+                                                         Log.i("BottomSheetCallback", "BottomSheetBehavior.STATE_DRAGGING");
+                                                         break;
+                                                     case BottomSheetBehavior.STATE_SETTLING:
+                                                         Log.i("BottomSheetCallback", "BottomSheetBehavior.STATE_SETTLING");
+                                                         break;
+                                                     case BottomSheetBehavior.STATE_EXPANDED:
+                                                         Log.i("BottomSheetCallback", "BottomSheetBehavior.STATE_EXPANDED");
+                                                         break;
+                                                     case BottomSheetBehavior.STATE_COLLAPSED:
+                                                         Log.i("BottomSheetCallback", "BottomSheetBehavior.STATE_COLLAPSED");
+                                                         break;
+                                                     case BottomSheetBehavior.STATE_HIDDEN:
+                                                         Log.i("BottomSheetCallback", "BottomSheetBehavior.STATE_HIDDEN");
+                                                         break;
+                                                 }
+                                             }
+
+                                             @Override
+                                             public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+
+                                             }
+                                         });
+            //progress bar
         mapsProgressbar = (ProgressBar)findViewById(R.id.map_progressBar);
         mContext = this;
         //SharedPreferences
@@ -158,6 +214,7 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
         myHeader = (ViewGroup) myinflater.inflate(R.layout.list_view_header, geofenceListView, false);
         geofenceListView.addHeaderView(myHeader, null, false);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setLogo(R.drawable.ic_main_logo);
         setActionBar(toolbar);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -576,10 +633,8 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
     private void setUpMap(GoogleDirectionsResponseHandler responseHandler){
         if (responseHandler != null) {
 
-            final StringBuilder mOrigin = new StringBuilder("");
-            final StringBuilder mDestination = new StringBuilder("");
+
             ArrayList<Route> routes = responseHandler.getRoute();
-            final ArrayList<Steps> geofenceList = new ArrayList<>();
             for (int l = 0; l < routes.size(); l++) {
                 Random rnd = new Random();
                 listPoints = decodePoly(routes.get(l).getEncodedString());
@@ -606,7 +661,7 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
 
                 //}
                 //options.clickable(true);
-                
+
                 Polyline polyLine = mMap.addPolyline(options);
 
                 polyLine.setClickable(true);
@@ -627,76 +682,97 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
                 mMap.setOnPolylineClickListener(new GoogleMap.OnPolylineClickListener() {
                     @Override
                     public void onPolylineClick(Polyline polyline) {
-                        if (!isPolyClicked) {
-                            Log.i("GEOFENCELOG", "POLYLINE HAS BEEN CLICKED " + polyline.getId());
-                            isBusy = true;
-                            setViewVisibility(isBusy);
-                            Route selectedRoute = null;
-                            String id = polyline.getId();
-                            Iterator<Map.Entry<Route, Polyline>> itr = polylines.entrySet().iterator();
-
-                            while (itr.hasNext()) {
-                                Map.Entry<Route, Polyline> entry = itr.next();
-                                if (!entry.getValue().getId().equals(id)) {
-                                    Log.i("JSONPARSERLOG", "Key : " + entry.getKey() + " Removed.");
-                                    entry.getValue().remove();
-                                    itr.remove();  // Call Iterator's remove method.
-
-                                } else {
-                                    selectedRoute = entry.getKey();
-                                    Log.i("GEOFENCELOG", "SELECTED ROUTE IS " + selectedRoute.getSummary());
-                                    ArrayList<Legs> selectedLegs = selectedRoute.getLegs();
-                                    for (Legs l : selectedLegs) {
-                                        ArrayList<Steps> selectedSteps = l.getSteps();
-                                        for (int r = 0; r < selectedSteps.size(); r++) {
-
-                                            //mMap.addMarker(new MarkerOptions().position(new LatLng(selectedSteps.get(r).getStartLocation().getLat(), selectedSteps.get(r).getStartLocation().getLng())));
-
-                                            Log.i("GEOFENCELOG", "ADDING STEP NO. " + r);
-                                            geofenceList.add(r, selectedSteps.get(r));
-                                            try {
-                                                Log.i("GEOFENCELOG", "ADDING CIRCLE NO. " + r);
-                                                mMap.addCircle(new CircleOptions()
-                                                        .center(new LatLng(selectedSteps.get(r).getStartLocation().getLat(), selectedSteps.get(r).getStartLocation().getLng()))
-                                                        .radius(Constants.GEOFENCE_POINTS_RADIUS)
-                                                        .strokeColor(Color.RED)
-                                                        .strokeWidth(2)
-                                                        .fillColor(Color.argb(100, 233, 195, 160)));
-                                            } catch (SecurityException securityException) {
-                                                Log.e("JSONPARSELOG", securityException.getMessage());
-                                            }
-
-                                        }
-                                    }
-
-                                    if (!mOrigin.equals(mDestination)) {
-                                        try {
-                                            Log.i("GEOFENCELOG", "ADDING GEOFENCES, POPULATING GEOFENCE LIST");
-                                            populateStepsGeofenceList(Constants.GEOFENCE_POINTS_RADIUS, geofenceList);
-                                            LocationServices.GeofencingApi.addGeofences(
-                                                    mGoogleApiClient,
-                                                    getGeofencingRequest(),
-                                                    getGeofencePendingIntent()
-                                            ).setResultCallback(MapsActivity.this);
-                                            isGeofenceAdded = true;
-                                            Log.i("GEOFENCELOG", "DONE REQUESTING GEOFENCES");
-                                            setButtonsEnabledState(isGeofenceAdded);
-                                        } catch (SecurityException se) {
-                                            Log.e("JSONPARSERLOG", se.getMessage());
-                                        }
-                                    } else {
-                                        showToast("Origin and destination cannot be the same");
-                                    }
-                                }
-
+                        Route routeInfo = new Route();
+                        Log.i("JSONPARSERLOG", "POLYLINE CLICKED. POLYLINES SIZE = " + polylines.size());
+                        for (Map.Entry<Route, Polyline> entry : polylines.entrySet()){
+                            Log.i("JSONPARSERLOG", "POLYLINEID = " + entry.getValue().getId());
+                            if(entry.getValue().getId().equals(polyline.getId())){
+                                Log.i("JSONPARSERLOG", "YOU CLICKED ROUTE: " + entry.getKey().getSummary());
+                                routeInfo = entry.getKey();
+                                selectedPolyline = entry.getValue();
                             }
-                            isPolyClicked = true;
                         }
+                        tvbsSummaryData.setText(routeInfo.getSummary());
+                        tvbsWarningData.setText(routeInfo.getWarnings());
+                        tvbsDurationData.setText(routeInfo.getRouteDetails().getDuration().toString());
+                        tvbsDurationTData.setText(String.valueOf(routeInfo.getRouteDetails().getDurationInTrafficTotal()));
+                        bottomSheet.setVisibility(View.VISIBLE);
+
+
+
                     }
                 });
             }
         }else{
             Log.i("JSONPARSERLOG", "RESPONSE IS NULL");
+        }
+    }
+
+    private void setRoute(Polyline polyline){
+        if (!isPolyClicked) {
+            Log.i("GEOFENCELOG", "POLYLINE HAS BEEN CLICKED " + polyline.getId());
+            isBusy = true;
+            setViewVisibility(isBusy);
+            Route selectedRoute = null;
+            String id = polyline.getId();
+            Iterator<Map.Entry<Route, Polyline>> itr = polylines.entrySet().iterator();
+
+            while (itr.hasNext()) {
+                Map.Entry<Route, Polyline> entry = itr.next();
+                if (!entry.getValue().getId().equals(id)) {
+                    Log.i("JSONPARSERLOG", "Key : " + entry.getKey() + " Removed.");
+                    entry.getValue().remove();
+                    itr.remove();  // Call Iterator's remove method.
+
+                } else {
+                    selectedRoute = entry.getKey();
+                    Log.i("GEOFENCELOG", "SELECTED ROUTE IS " + selectedRoute.getSummary());
+                    ArrayList<Legs> selectedLegs = selectedRoute.getLegs();
+                    for (Legs l : selectedLegs) {
+                        ArrayList<Steps> selectedSteps = l.getSteps();
+                        for (int r = 0; r < selectedSteps.size(); r++) {
+
+                            //mMap.addMarker(new MarkerOptions().position(new LatLng(selectedSteps.get(r).getStartLocation().getLat(), selectedSteps.get(r).getStartLocation().getLng())));
+
+                            Log.i("GEOFENCELOG", "ADDING STEP NO. " + r);
+                            geofenceList.add(r, selectedSteps.get(r));
+                            try {
+                                Log.i("GEOFENCELOG", "ADDING CIRCLE NO. " + r);
+                                mMap.addCircle(new CircleOptions()
+                                        .center(new LatLng(selectedSteps.get(r).getStartLocation().getLat(), selectedSteps.get(r).getStartLocation().getLng()))
+                                        .radius(Constants.GEOFENCE_POINTS_RADIUS)
+                                        .strokeColor(Color.RED)
+                                        .strokeWidth(2)
+                                        .fillColor(Color.argb(100, 233, 195, 160)));
+                            } catch (SecurityException securityException) {
+                                Log.e("JSONPARSELOG", securityException.getMessage());
+                            }
+
+                        }
+                    }
+
+                    if (!mOrigin.equals(mDestination)) {
+                        try {
+                            Log.i("GEOFENCELOG", "ADDING GEOFENCES, POPULATING GEOFENCE LIST");
+                            populateStepsGeofenceList(Constants.GEOFENCE_POINTS_RADIUS, geofenceList);
+                            LocationServices.GeofencingApi.addGeofences(
+                                    mGoogleApiClient,
+                                    getGeofencingRequest(),
+                                    getGeofencePendingIntent()
+                            ).setResultCallback(MapsActivity.this);
+                            isGeofenceAdded = true;
+                            Log.i("GEOFENCELOG", "DONE REQUESTING GEOFENCES");
+                            setButtonsEnabledState(isGeofenceAdded);
+                        } catch (SecurityException se) {
+                            Log.e("JSONPARSERLOG", se.getMessage());
+                        }
+                    } else {
+                        showToast("Origin and destination cannot be the same");
+                    }
+                }
+
+            }
+            isPolyClicked = true;
         }
     }
 
@@ -743,6 +819,16 @@ public class MapsActivity extends FragmentActivity implements ListView.OnItemCli
             myHeader.setVisibility(View.GONE);
             geofenceListView.setVisibility(View.GONE);
             mapsProgressbar.setVisibility(View.VISIBLE);
+        }
+    }
+
+    @Override
+    public void onClick(View v) {
+        int id = v.getId();
+
+        if (id == R.id.bottom_sheet_btn_select){
+            setRoute(selectedPolyline);
+            bottomSheet.setVisibility(View.GONE);
         }
     }
 }

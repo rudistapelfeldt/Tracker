@@ -50,6 +50,14 @@
     <string name="route_detail_text_view_duration_in_traffic">Duration in traffic</string>
     <string name="route_detail_button_text">GOT IT</string>
 
+    <!--bottom sheet strings -->
+    <string name="bottom_sheet_hdr"><u>Route Information</u></string>
+    <string name="bottom_sheet_summary">Summary:</string>
+    <string name="bottom_sheet_warnings">Warnings:</string>
+    <string name="bottom_sheet_duration">Duration:</string>
+    <string name="bottom_sheet_duration_traffic">Duration in trraffic:</string>
+    <string name="bottom_sheet_button">Select Route</string>
+
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
